@@ -1,0 +1,1402 @@
+🚀 Iniciando testes da API Flask...
+
+📋 TESTANDO AUTENTICAÇÃO
+
+=== Login RH ===
+Status: 200
+Response: {
+  "autenticado": true,
+  "usuario": {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.255227",
+    "email": "maria.rh@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": null,
+    "grupo_nome": null,
+    "id": 1,
+    "inicio_na_empresa": "2020-01-15",
+    "nome": "Maria Silva",
+    "tipo_usuario": "rh"
+  }
+}
+
+=== Login Gestor ===
+Status: 200
+Response: {
+  "autenticado": true,
+  "usuario": {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.381695",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  }
+}
+
+=== Login Inválido ===
+Status: 401
+Response: {
+  "autenticado": false,
+  "erro": "Credenciais inválidas"
+}
+
+📋 TESTANDO EMPRESAS
+
+=== Listar Empresas ===
+Status: 200
+Response: [
+  {
+    "ativa": true,
+    "cnpj": "12.345.678/0001-90",
+    "criado_em": "2025-05-27T18:56:42.095529",
+    "email": "contato@techsolutions.com",
+    "endereco": "Rua das Flores, 123 - São Paulo/SP",
+    "id": 1,
+    "nome": "Tech Solutions LTDA",
+    "telefone": "(11) 1234-5678",
+    "total_grupos": 6
+  },
+  {
+    "ativa": true,
+    "cnpj": "98.765.432/0001-10",
+    "criado_em": "2025-05-27T19:05:30.405724",
+    "email": "contato@novaempresa.com",
+    "endereco": "Rua Nova, 456",
+    "id": 2,
+    "nome": "Nova Empresa LTDA",
+    "telefone": "(11) 9876-5432",
+    "total_grupos": 0
+  },
+  {
+    "ativa": true,
+    "cnpj": "33599498/0001-50",
+    "criado_em": "2025-05-27T19:31:26.963297",
+    "email": null,
+    "endereco": null,
+    "id": 3,
+    "nome": "Empresa Teste 1748374286960",
+    "telefone": null,
+    "total_grupos": 0
+  }
+]
+
+=== Obter Empresa 1 ===
+Status: 200
+Response: {
+  "ativa": true,
+  "cnpj": "12.345.678/0001-90",
+  "criado_em": "2025-05-27T18:56:42.095529",
+  "email": "contato@techsolutions.com",
+  "endereco": "Rua das Flores, 123 - São Paulo/SP",
+  "id": 1,
+  "nome": "Tech Solutions LTDA",
+  "telefone": "(11) 1234-5678",
+  "total_grupos": 6
+}
+
+=== Criar Empresa ===
+Status: 409
+Response: {
+  "erro": "CNPJ já cadastrado"
+}
+
+📋 TESTANDO GRUPOS
+
+=== Listar Grupos ===
+Status: 200
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.115670",
+    "descricao": "Equipe de desenvolvimento de software",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 1,
+    "nome": "Desenvolvimento",
+    "total_usuarios": 5
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.129731",
+    "descricao": "Equipe de marketing e vendas",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 2,
+    "nome": "Marketing",
+    "total_usuarios": 1
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:05:30.500873",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 3,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:22:20.480342",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 4,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:24:33.237279",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 5,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:25:15.320419",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 6,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:27:29.689644",
+    "descricao": "Teste",
+    "empresa_id": 999,
+    "empresa_nome": "N/A",
+    "id": 7,
+    "nome": "Grupo Teste",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:29:59.846575",
+    "descricao": "Teste",
+    "empresa_id": 999,
+    "empresa_nome": "N/A",
+    "id": 8,
+    "nome": "Grupo Teste",
+    "total_usuarios": 0
+  }
+]
+
+=== Grupos da Empresa 1 ===
+Status: 200
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.115670",
+    "descricao": "Equipe de desenvolvimento de software",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 1,
+    "nome": "Desenvolvimento",
+    "total_usuarios": 5
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.129731",
+    "descricao": "Equipe de marketing e vendas",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 2,
+    "nome": "Marketing",
+    "total_usuarios": 1
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:05:30.500873",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 3,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:22:20.480342",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 4,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:24:33.237279",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 5,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:25:15.320419",
+    "descricao": "Equipe de vendas e relacionamento com cliente",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 6,
+    "nome": "Vendas",
+    "total_usuarios": 0
+  }
+]
+
+=== Obter Grupo 1 ===
+Status: 200
+Response: {
+  "ativo": true,
+  "criado_em": "2025-05-27T18:56:42.115670",
+  "descricao": "Equipe de desenvolvimento de software",
+  "empresa_id": 1,
+  "empresa_nome": "Tech Solutions LTDA",
+  "id": 1,
+  "nome": "Desenvolvimento",
+  "total_usuarios": 5
+}
+
+=== Criar Grupo ===
+Status: 201
+Response: {
+  "ativo": true,
+  "criado_em": "2025-05-27T20:03:18.525816",
+  "descricao": "Equipe de vendas e relacionamento com cliente",
+  "empresa_id": 1,
+  "empresa_nome": "Tech Solutions LTDA",
+  "id": 9,
+  "nome": "Vendas",
+  "total_usuarios": 0
+}
+
+=== Estatísticas Grupo 1 ===
+Status: 200
+Response: {
+  "eventos_aprovados": 1,
+  "eventos_pendentes": 8,
+  "grupo": "Desenvolvimento",
+  "total_usuarios": 5,
+  "usuarios_ativos": 5
+}
+
+📋 TESTANDO USUÁRIOS
+
+=== Listar Usuários ===
+Status: 200
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.255227",
+    "email": "maria.rh@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": null,
+    "grupo_nome": null,
+    "id": 1,
+    "inicio_na_empresa": "2020-01-15",
+    "nome": "Maria Silva",
+    "tipo_usuario": "rh"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.381695",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.502948",
+    "email": "ana.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 3,
+    "inicio_na_empresa": "2022-06-01",
+    "nome": "Ana Costa",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.625439",
+    "email": "carlos.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 4,
+    "inicio_na_empresa": "2023-01-20",
+    "nome": "Carlos Oliveira",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.748980",
+    "email": "lucia.marketing@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Marketing",
+    "id": 5,
+    "inicio_na_empresa": "2022-09-15",
+    "nome": "Lucia Ferreira",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:05:30.808131",
+    "email": "pedro.silva@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 6,
+    "inicio_na_empresa": "2024-01-15",
+    "nome": "Pedro Silva",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:31:27.245680",
+    "email": "teste1748374287009@example.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 7,
+    "inicio_na_empresa": "2024-01-01",
+    "nome": "Usuário Teste",
+    "tipo_usuario": "comum"
+  }
+]
+
+=== Usuários do Grupo 1 ===
+Status: 200
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.381695",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.502948",
+    "email": "ana.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 3,
+    "inicio_na_empresa": "2022-06-01",
+    "nome": "Ana Costa",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.625439",
+    "email": "carlos.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 4,
+    "inicio_na_empresa": "2023-01-20",
+    "nome": "Carlos Oliveira",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:05:30.808131",
+    "email": "pedro.silva@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 6,
+    "inicio_na_empresa": "2024-01-15",
+    "nome": "Pedro Silva",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T19:31:27.245680",
+    "email": "teste1748374287009@example.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 7,
+    "inicio_na_empresa": "2024-01-01",
+    "nome": "Usuário Teste",
+    "tipo_usuario": "comum"
+  }
+]
+
+=== Listar Gestores ===
+Status: 200
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-27T18:56:42.381695",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  }
+]
+
+=== Obter Usuário 1 ===
+Status: 200
+Response: {
+  "ativo": true,
+  "criado_em": "2025-05-27T18:56:42.255227",
+  "email": "maria.rh@techsolutions.com",
+  "ferias_tiradas": 0,
+  "grupo_id": null,
+  "grupo_nome": null,
+  "id": 1,
+  "inicio_na_empresa": "2020-01-15",
+  "nome": "Maria Silva",
+  "tipo_usuario": "rh"
+}
+
+=== Criar Usuário ===
+Status: 409
+Response: {
+  "erro": "Email já cadastrado"
+}
+
+📋 TESTANDO EVENTOS
+
+=== Listar Eventos ===
+Status: 200
+Response: [
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.768132",
+    "data_aprovacao": null,
+    "data_fim": "2024-02-19",
+    "data_inicio": "2024-02-15",
+    "descricao": "Férias de carnaval",
+    "id": 1,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.782720",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-01",
+    "data_inicio": "2024-03-01",
+    "descricao": "Consulta médica",
+    "id": 2,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": 2,
+    "aprovado_por_nome": "João Santos",
+    "criado_em": "2025-05-27T19:05:30.903511",
+    "data_aprovacao": "2025-05-27T19:25:15.575820",
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 3,
+    "observacoes_aprovacao": "Aprovado pelo gestor",
+    "status": "aprovado",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": 2,
+    "aprovado_por_nome": "João Santos",
+    "criado_em": "2025-05-27T19:05:30.947549",
+    "data_aprovacao": "2025-05-27T19:25:15.612533",
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 4,
+    "observacoes_aprovacao": "Precisa reagendar",
+    "status": "rejeitado",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.723704",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 5,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.751876",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 6,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.718110",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 7,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.782946",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 8,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.551971",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 9,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.593221",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 10,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  }
+]
+
+=== Eventos do Usuário 3 ===
+Status: 200
+Response: [
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.768132",
+    "data_aprovacao": null,
+    "data_fim": "2024-02-19",
+    "data_inicio": "2024-02-15",
+    "descricao": "Férias de carnaval",
+    "id": 1,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": 2,
+    "aprovado_por_nome": "João Santos",
+    "criado_em": "2025-05-27T19:05:30.903511",
+    "data_aprovacao": "2025-05-27T19:25:15.575820",
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 3,
+    "observacoes_aprovacao": "Aprovado pelo gestor",
+    "status": "aprovado",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.723704",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 5,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.718110",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 7,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.551971",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 9,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  }
+]
+
+=== Eventos do Grupo 1 ===
+Status: 200
+Response: [
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.768132",
+    "data_aprovacao": null,
+    "data_fim": "2024-02-19",
+    "data_inicio": "2024-02-15",
+    "descricao": "Férias de carnaval",
+    "id": 1,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.782720",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-01",
+    "data_inicio": "2024-03-01",
+    "descricao": "Consulta médica",
+    "id": 2,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": 2,
+    "aprovado_por_nome": "João Santos",
+    "criado_em": "2025-05-27T19:05:30.903511",
+    "data_aprovacao": "2025-05-27T19:25:15.575820",
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 3,
+    "observacoes_aprovacao": "Aprovado pelo gestor",
+    "status": "aprovado",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": 2,
+    "aprovado_por_nome": "João Santos",
+    "criado_em": "2025-05-27T19:05:30.947549",
+    "data_aprovacao": "2025-05-27T19:25:15.612533",
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 4,
+    "observacoes_aprovacao": "Precisa reagendar",
+    "status": "rejeitado",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.723704",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 5,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.751876",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 6,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.718110",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 7,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.782946",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 8,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.551971",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 9,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.593221",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 10,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  }
+]
+
+=== Eventos Pendentes ===
+Status: 200
+Response: [
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.768132",
+    "data_aprovacao": null,
+    "data_fim": "2024-02-19",
+    "data_inicio": "2024-02-15",
+    "descricao": "Férias de carnaval",
+    "id": 1,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T18:56:42.782720",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-01",
+    "data_inicio": "2024-03-01",
+    "descricao": "Consulta médica",
+    "id": 2,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.723704",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 5,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:22:20.751876",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 6,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.718110",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 7,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:24:33.782946",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 8,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.551971",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-19",
+    "data_inicio": "2024-03-15",
+    "descricao": "Férias de março",
+    "id": 9,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": "Dia",
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-27T19:25:15.593221",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Consulta médica",
+    "id": 10,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  }
+]
+
+=== Obter Evento 1 ===
+Status: 200
+Response: {
+  "aprovado_por_id": null,
+  "aprovado_por_nome": null,
+  "criado_em": "2025-05-27T18:56:42.768132",
+  "data_aprovacao": null,
+  "data_fim": "2024-02-19",
+  "data_inicio": "2024-02-15",
+  "descricao": "Férias de carnaval",
+  "id": 1,
+  "observacoes_aprovacao": null,
+  "status": "pendente",
+  "tipo_ausencia": "Férias",
+  "total_dias": 5,
+  "turno": null,
+  "usuario_id": 3,
+  "usuario_nome": "Ana Costa"
+}
+
+=== Criar Evento ===
+Status: 201
+Response: {
+  "aprovado_por_id": null,
+  "aprovado_por_nome": null,
+  "criado_em": "2025-05-27T20:03:18.775338",
+  "data_aprovacao": null,
+  "data_fim": "2024-03-19",
+  "data_inicio": "2024-03-15",
+  "descricao": "Férias de março",
+  "id": 13,
+  "observacoes_aprovacao": null,
+  "status": "pendente",
+  "tipo_ausencia": "Férias",
+  "total_dias": 5,
+  "turno": "Dia",
+  "usuario_id": 3,
+  "usuario_nome": "Ana Costa"
+}
+
+=== Aprovar Evento ===
+Status: 200
+Response: {
+  "status": "Evento aprovado"
+}
+
+=== Criar Evento para Rejeitar ===
+Status: 201
+Response: {
+  "aprovado_por_id": null,
+  "aprovado_por_nome": null,
+  "criado_em": "2025-05-27T20:03:18.817518",
+  "data_aprovacao": null,
+  "data_fim": "2024-04-01",
+  "data_inicio": "2024-04-01",
+  "descricao": "Consulta médica",
+  "id": 14,
+  "observacoes_aprovacao": null,
+  "status": "pendente",
+  "tipo_ausencia": "Assiduidade",
+  "total_dias": 1,
+  "turno": null,
+  "usuario_id": 4,
+  "usuario_nome": "Carlos Oliveira"
+}
+
+=== Rejeitar Evento ===
+Status: 200
+Response: {
+  "status": "Evento rejeitado"
+}
+
+📋 TESTANDO CALENDÁRIO
+
+=== Calendário Geral ===
+Status: 200
+Response: [
+  {
+    "color": "red",
+    "end": "2024-03-20",
+    "extendedProps": {
+      "description": "Férias de março",
+      "shift": "Dia",
+      "status": "aprovado",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 3,
+    "start": "2024-03-15",
+    "title": "Férias - Ana Costa"
+  }
+]
+
+=== Calendário Grupo 1 ===
+Status: 200
+Response: {
+  "eventos": [
+    {
+      "color": "red",
+      "end": "2024-03-20",
+      "extendedProps": {
+        "description": "Férias de março",
+        "shift": "Dia",
+        "status": "aprovado",
+        "total_dias": 5,
+        "usuario_id": 3,
+        "usuario_nome": "Ana Costa"
+      },
+      "id": 3,
+      "start": "2024-03-15",
+      "title": "Férias - Ana Costa"
+    }
+  ],
+  "grupo_id": 1,
+  "total_eventos": 1
+}
+
+=== Calendário Completo ===
+Status: 200
+Response: [
+  {
+    "color": "red",
+    "end": "2024-02-20",
+    "extendedProps": {
+      "description": "Férias de carnaval",
+      "shift": null,
+      "status": "pendente",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 1,
+    "start": "2024-02-15",
+    "title": "Férias - Ana Costa"
+  },
+  {
+    "color": "grey",
+    "end": "2024-03-02",
+    "extendedProps": {
+      "description": "Consulta médica",
+      "shift": null,
+      "status": "pendente",
+      "total_dias": 1,
+      "usuario_id": 4,
+      "usuario_nome": "Carlos Oliveira"
+    },
+    "id": 2,
+    "start": "2024-03-01",
+    "title": "Assiduidade - Carlos Oliveira"
+  },
+  {
+    "color": "red",
+    "end": "2024-03-20",
+    "extendedProps": {
+      "description": "Férias de março",
+      "shift": "Dia",
+      "status": "aprovado",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 3,
+    "start": "2024-03-15",
+    "title": "Férias - Ana Costa"
+  },
+  {
+    "color": "grey",
+    "end": "2024-04-02",
+    "extendedProps": {
+      "description": "Consulta médica",
+      "shift": null,
+      "status": "rejeitado",
+      "total_dias": 1,
+      "usuario_id": 4,
+      "usuario_nome": "Carlos Oliveira"
+    },
+    "id": 4,
+    "start": "2024-04-01",
+    "title": "Assiduidade - Carlos Oliveira"
+  },
+  {
+    "color": "red",
+    "end": "2024-03-20",
+    "extendedProps": {
+      "description": "Férias de março",
+      "shift": "Dia",
+      "status": "pendente",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 5,
+    "start": "2024-03-15",
+    "title": "Férias - Ana Costa"
+  },
+  {
+    "color": "grey",
+    "end": "2024-04-02",
+    "extendedProps": {
+      "description": "Consulta médica",
+      "shift": null,
+      "status": "pendente",
+      "total_dias": 1,
+      "usuario_id": 4,
+      "usuario_nome": "Carlos Oliveira"
+    },
+    "id": 6,
+    "start": "2024-04-01",
+    "title": "Assiduidade - Carlos Oliveira"
+  },
+  {
+    "color": "red",
+    "end": "2024-03-20",
+    "extendedProps": {
+      "description": "Férias de março",
+      "shift": "Dia",
+      "status": "pendente",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 7,
+    "start": "2024-03-15",
+    "title": "Férias - Ana Costa"
+  },
+  {
+    "color": "grey",
+    "end": "2024-04-02",
+    "extendedProps": {
+      "description": "Consulta médica",
+      "shift": null,
+      "status": "pendente",
+      "total_dias": 1,
+      "usuario_id": 4,
+      "usuario_nome": "Carlos Oliveira"
+    },
+    "id": 8,
+    "start": "2024-04-01",
+    "title": "Assiduidade - Carlos Oliveira"
+  },
+  {
+    "color": "red",
+    "end": "2024-03-20",
+    "extendedProps": {
+      "description": "Férias de março",
+      "shift": "Dia",
+      "status": "pendente",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 9,
+    "start": "2024-03-15",
+    "title": "Férias - Ana Costa"
+  },
+  {
+    "color": "grey",
+    "end": "2024-04-02",
+    "extendedProps": {
+      "description": "Consulta médica",
+      "shift": null,
+      "status": "pendente",
+      "total_dias": 1,
+      "usuario_id": 4,
+      "usuario_nome": "Carlos Oliveira"
+    },
+    "id": 10,
+    "start": "2024-04-01",
+    "title": "Assiduidade - Carlos Oliveira"
+  },
+  {
+    "color": "red",
+    "end": "2024-03-20",
+    "extendedProps": {
+      "description": "Férias de março",
+      "shift": "Dia",
+      "status": "pendente",
+      "total_dias": 5,
+      "usuario_id": 3,
+      "usuario_nome": "Ana Costa"
+    },
+    "id": 13,
+    "start": "2024-03-15",
+    "title": "Férias - Ana Costa"
+  },
+  {
+    "color": "grey",
+    "end": "2024-04-02",
+    "extendedProps": {
+      "description": "Consulta médica",
+      "shift": null,
+      "status": "pendente",
+      "total_dias": 1,
+      "usuario_id": 4,
+      "usuario_nome": "Carlos Oliveira"
+    },
+    "id": 14,
+    "start": "2024-04-01",
+    "title": "Assiduidade - Carlos Oliveira"
+  }
+]
+
+📋 TESTANDO CASOS DE ERRO
+
+=== Empresa Inexistente ===
+Status: 404
+Response: {
+  "erro": "Empresa não encontrada"
+}
+
+=== Usuário Inexistente ===
+Status: 404
+Response: {
+  "erro": "Usuário não encontrado"
+}
+
+=== Criar Usuário Inválido ===
+Status: 400
+Response: {
+  "erro": "Parâmetro ausente: 'email'"
+}
+
+=== Criar Evento Inválido ===
+Status: 400
+Response: {
+  "erro": "Valor inválido: 'TipoInexistente' is not a valid TipoAusencia"
+}
+
+✅ Testes concluídos!
