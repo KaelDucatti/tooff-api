@@ -38,12 +38,12 @@ Empresa → Grupo → Usuário → Evento
 - **Saída**: Dados do usuário autenticado
 - **Status**: 200 (sucesso), 401 (credenciais inválidas)
 
-\`\`\`json
+```json
 {
   "email": "maria.rh@techsolutions.com",
   "senha": "123456"
 }
-\`\`\`
+```
 
 ---
 
