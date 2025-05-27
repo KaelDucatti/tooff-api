@@ -5,9 +5,9 @@
 API Flask para gestão hierárquica de eventos corporativos com sistema de aprovação baseado em níveis de usuário.
 
 ### 🎯 Modelo Hierárquico
-\`\`\`
+```
 Empresa → Grupo → Usuário → Evento
-\`\`\`
+```
 
 ### 👥 Tipos de Usuário
 - **RH**: Acesso total ao sistema
