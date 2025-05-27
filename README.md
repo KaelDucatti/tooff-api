@@ -4,29 +4,29 @@ API Flask para gestão de eventos, usuários e grupos em empresas, com sistema d
 
 ## Estrutura do Projeto
 
-\`\`\`
-├── app.py                 # Aplicação principal Flask
-├── requirements.txt       # Dependências Python
-├── .env.example          # Exemplo de variáveis de ambiente
+```
+├── app.py                 
+├── requirements.txt       
+├── .env.example          
 ├── api/
 │   ├── __init__.py
 │   ├── database/
 │   │   ├── __init__.py
-│   │   ├── models.py     # Modelos SQLAlchemy
-│   │   └── crud.py       # Operações CRUD
+│   │   ├── models.py     
+│   │   └── crud.py       
 │   └── routes/
 │       ├── __init__.py
-│       ├── auth.py       # Autenticação
-│       ├── empresas.py   # CRUD Empresas
-│       ├── grupos.py     # CRUD Grupos
-│       ├── usuarios.py   # CRUD Usuários
-│       ├── eventos.py    # CRUD Eventos
-│       └── calendario.py # Calendário
-├── database/             # Diretório do banco SQLite
+│       ├── auth.py       
+│       ├── empresas.py   
+│       ├── grupos.py     
+│       ├── usuarios.py   
+│       ├── eventos.py    
+│       └── calendario.py 
+├── database/             
 ├── scripts/
-│   └── seed_data.py     # Script para dados de exemplo
+│   └── seed_data.py     
 └── README.md
-\`\`\`
+```
 
 ## Modelo de Dados
 
@@ -47,25 +47,25 @@ API Flask para gestão de eventos, usuários e grupos em empresas, com sistema d
 
 1. Clone o repositório
 2. Instale as dependências:
-\`\`\`bash
+```bash
 pip install -r requirements.txt
-\`\`\`
+```
 
 3. Configure as variáveis de ambiente:
-\`\`\`bash
+```bash
 cp .env.example .env
 # Edite o arquivo .env conforme necessário
-\`\`\`
+```
 
 4. Execute o script para criar dados de exemplo:
-\`\`\`bash
+```bash
 python scripts/seed_data.py
-\`\`\`
+```
 
 5. Execute a aplicação:
-\`\`\`bash
+```bash
 python app.py
-\`\`\`
+```
 
 ## Endpoints Principais
 
