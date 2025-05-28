@@ -156,31 +156,37 @@ def atualizar(evento_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @eventos_bp.route('/<int:evento_id>', methods=['DELETE'])
-@requer_permissao_evento
+# @requer_permissao_evento
 def deletar(evento_id: int):
     """Deleta um evento"""
     try:
         usuario_id = extrair_usuario_id_do_token()
         if not usuario_id:
             return jsonify({"erro": "Token de autenticação necessário"}), 401
-            
+
         evento = obter_evento(evento_id)
         usuario_logado = obter_usuario(usuario_id)
-        
+
         if not evento or not usuario_logado:
             return jsonify({"erro": "Evento ou usuário não encontrado"}), 404
-        
-        # Usuários comuns só podem deletar próprios eventos pendentes
-        if (usuario_logado.tipo_usuario == TipoUsuario.COMUM and 
-            (evento.usuario_id != usuario_id or evento.status != StatusEvento.PENDENTE)):
+
+        # 1) Usuário comum NÃO pode deletar evento de outro
+        if usuario_logado.tipo_usuario == TipoUsuario.COMUM and evento.usuario_id != usuario_id:
             return jsonify({"erro": "Só é possível deletar próprios eventos pendentes"}), 403
-        
+
+        # 2) Mesmo o próprio usuário comum só deleta se o evento estiver PENDENTE
+        if usuario_logado.tipo_usuario == TipoUsuario.COMUM and evento.status != StatusEvento.PENDENTE:
+            return jsonify({"erro": "Só é possível deletar próprios eventos pendentes"}), 403
+
         sucesso = deletar_evento(evento_id)
         if not sucesso:
             return jsonify({"erro": "Evento não encontrado"}), 404
+
         return jsonify({"status": "Evento deletado"}), 200
+
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
+    
 
 @eventos_bp.route('/<int:evento_id>/aprovar', methods=['POST'])
 @requer_permissao_evento
