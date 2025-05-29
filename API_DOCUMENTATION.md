@@ -38,15 +38,15 @@ Empresa → Grupo → Usuário → Evento
 - **Saída**: `access_token`, `refresh_token`, dados do usuário
 - **Status**: 200 (sucesso), 401 (credenciais inválidas)
 
-\`\`\`json
+```json
 {
   "email": "maria.rh@techsolutions.com",
   "senha": "123456"
 }
-\`\`\`
+```
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "autenticado": true,
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
@@ -55,7 +55,7 @@ Empresa → Grupo → Usuário → Evento
   "expires_in": 3600,
   "usuario": { ... }
 }
-\`\`\`
+```
 
 ### `POST /api/auth/refresh`
 **Funcionalidade**: Renovar token de acesso
