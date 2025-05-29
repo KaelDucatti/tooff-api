@@ -201,7 +201,6 @@ def criar_evento(usuario_id: int, data_inicio: str, data_fim: str,
 def listar_eventos(usuario_id: Optional[int] = None, grupo_id: Optional[int] = None,
                   status: Optional[StatusEvento] = None) -> List[Evento]:
     with get_session() as session:
-        # Join explícito especificando a condição
         query = select(Evento).join(Usuario, Evento.usuario_id == Usuario.id)
         
         conditions = []

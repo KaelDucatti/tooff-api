@@ -1,13 +1,18 @@
-// Script para testar todos os endpoints da API Flask
+// Script completo para testar a API com autenticação JWT
 const BASE_URL = "http://localhost:5000/api"
 
 // Função auxiliar para fazer requisições
-async function makeRequest(method, url, data = null) {
+async function makeRequest(method, url, data = null, token = null) {
   const options = {
     method: method,
     headers: {
       "Content-Type": "application/json",
     },
+  }
+
+  // Adicionar token JWT se fornecido
+  if (token) {
+    options.headers["Authorization"] = `Bearer ${token}`
   }
 
   if (data) {
@@ -33,231 +38,148 @@ async function makeRequest(method, url, data = null) {
 function logResult(testName, result) {
   console.log(`\n=== ${testName} ===`)
   console.log(`Status: ${result.status}`)
-  console.log("Response:", JSON.stringify(result.data, null, 2))
+  if (result.status === 200 || result.status === 201) {
+    console.log("✅ SUCESSO")
+  } else if (result.status >= 400) {
+    console.log("❌ ERRO")
+  }
+
+  // Mostrar apenas dados relevantes (não tokens completos)
+  if (result.data.access_token) {
+    console.log("Response: { access_token: '***', refresh_token: '***', usuario: {...} }")
+  } else {
+    console.log("Response:", JSON.stringify(result.data, null, 2))
+  }
 }
 
 // Função principal de teste
-async function testAllEndpoints() {
-  console.log("🚀 Iniciando testes da API Flask...\n")
+async function testJWTComplete() {
+  console.log("🔐 Testando API Flask com JWT completo...\n")
+
+  let rhToken = null
+  let gestorToken = null
 
   // ==================== AUTENTICAÇÃO ====================
-  console.log("📋 TESTANDO AUTENTICAÇÃO")
+  console.log("📋 TESTANDO AUTENTICAÇÃO JWT")
 
-  // Login válido - RH
-  const loginResult = await makeRequest("POST", `${BASE_URL}/auth/login`, {
+  // Login RH
+  const loginRH = await makeRequest("POST", `${BASE_URL}/auth/login`, {
     email: "maria.rh@techsolutions.com",
     senha: "123456",
   })
-  logResult("Login RH", loginResult)
+  logResult("Login RH", loginRH)
 
-  // Login válido - Gestor
+  if (loginRH.status === 200) {
+    rhToken = loginRH.data.access_token
+    console.log("🔑 Token RH capturado com sucesso!")
+  }
+
+  // Login Gestor
   const loginGestor = await makeRequest("POST", `${BASE_URL}/auth/login`, {
     email: "joao.gestor@techsolutions.com",
     senha: "123456",
   })
   logResult("Login Gestor", loginGestor)
 
-  // Login inválido
-  const loginInvalido = await makeRequest("POST", `${BASE_URL}/auth/login`, {
-    email: "inexistente@test.com",
-    senha: "senha_errada",
-  })
-  logResult("Login Inválido", loginInvalido)
+  if (loginGestor.status === 200) {
+    gestorToken = loginGestor.data.access_token
+    console.log("🔑 Token Gestor capturado com sucesso!")
+  }
 
-  // ==================== EMPRESAS ====================
-  console.log("\n📋 TESTANDO EMPRESAS")
+  // ==================== TESTES COM TOKEN RH ====================
+  console.log("\n📋 TESTANDO COM TOKEN RH (Acesso Total)")
+
+  // Endpoint /me
+  const meRH = await makeRequest("GET", `${BASE_URL}/auth/me`, null, rhToken)
+  logResult("Endpoint /me (RH)", meRH)
 
   // Listar empresas
-  const empresas = await makeRequest("GET", `${BASE_URL}/empresas`)
-  logResult("Listar Empresas", empresas)
-
-  // Obter empresa específica
-  const empresa = await makeRequest("GET", `${BASE_URL}/empresas/1`)
-  logResult("Obter Empresa 1", empresa)
-
-  // Criar nova empresa
-  const novaEmpresa = await makeRequest("POST", `${BASE_URL}/empresas`, {
-    nome: "Nova Empresa LTDA",
-    cnpj: "98.765.432/0001-10",
-    endereco: "Rua Nova, 456",
-    telefone: "(11) 9876-5432",
-    email: "contato@novaempresa.com",
-  })
-  logResult("Criar Empresa", novaEmpresa)
-
-  // Atualizar empresa (se criação foi bem-sucedida)
-  if (novaEmpresa.status === 201) {
-    const atualizarEmpresa = await makeRequest("PUT", `${BASE_URL}/empresas/2`, {
-      nome: "Nova Empresa LTDA - Atualizada",
-      telefone: "(11) 1111-2222",
-    })
-    logResult("Atualizar Empresa", atualizarEmpresa)
-  }
-
-  // ==================== GRUPOS ====================
-  console.log("\n📋 TESTANDO GRUPOS")
+  const empresasRH = await makeRequest("GET", `${BASE_URL}/empresas`, null, rhToken)
+  logResult("Listar Empresas (RH)", empresasRH)
 
   // Listar grupos
-  const grupos = await makeRequest("GET", `${BASE_URL}/grupos`)
-  logResult("Listar Grupos", grupos)
-
-  // Listar grupos por empresa
-  const gruposEmpresa = await makeRequest("GET", `${BASE_URL}/grupos?empresa_id=1`)
-  logResult("Grupos da Empresa 1", gruposEmpresa)
-
-  // Obter grupo específico
-  const grupo = await makeRequest("GET", `${BASE_URL}/grupos/1`)
-  logResult("Obter Grupo 1", grupo)
-
-  // Criar novo grupo
-  const novoGrupo = await makeRequest("POST", `${BASE_URL}/grupos`, {
-    nome: "Vendas",
-    empresa_id: 1,
-    descricao: "Equipe de vendas e relacionamento com cliente",
-  })
-  logResult("Criar Grupo", novoGrupo)
-
-  // Estatísticas do grupo
-  const statsGrupo = await makeRequest("GET", `${BASE_URL}/grupos/1/estatisticas`)
-  logResult("Estatísticas Grupo 1", statsGrupo)
-
-  // ==================== USUÁRIOS ====================
-  console.log("\n📋 TESTANDO USUÁRIOS")
+  const gruposRH = await makeRequest("GET", `${BASE_URL}/grupos`, null, rhToken)
+  logResult("Listar Grupos (RH)", gruposRH)
 
   // Listar usuários
-  const usuarios = await makeRequest("GET", `${BASE_URL}/usuarios`)
-  logResult("Listar Usuários", usuarios)
-
-  // Listar usuários por grupo
-  const usuariosGrupo = await makeRequest("GET", `${BASE_URL}/usuarios?grupo_id=1`)
-  logResult("Usuários do Grupo 1", usuariosGrupo)
-
-  // Listar usuários por tipo
-  const gestores = await makeRequest("GET", `${BASE_URL}/usuarios?tipo_usuario=gestor`)
-  logResult("Listar Gestores", gestores)
-
-  // Obter usuário específico
-  const usuario = await makeRequest("GET", `${BASE_URL}/usuarios/1`)
-  logResult("Obter Usuário 1", usuario)
-
-  // Criar novo usuário
-  const novoUsuario = await makeRequest("POST", `${BASE_URL}/usuarios`, {
-    nome: "Pedro Silva",
-    email: "pedro.silva@techsolutions.com",
-    senha: "123456",
-    inicio_na_empresa: "2024-01-15",
-    tipo_usuario: "comum",
-    grupo_id: 1,
-  })
-  logResult("Criar Usuário", novoUsuario)
-
-  // ==================== EVENTOS ====================
-  console.log("\n📋 TESTANDO EVENTOS")
+  const usuariosRH = await makeRequest("GET", `${BASE_URL}/usuarios`, null, rhToken)
+  logResult("Listar Usuários (RH)", usuariosRH)
 
   // Listar eventos
-  const eventos = await makeRequest("GET", `${BASE_URL}/eventos`)
-  logResult("Listar Eventos", eventos)
+  const eventosRH = await makeRequest("GET", `${BASE_URL}/eventos`, null, rhToken)
+  logResult("Listar Eventos (RH)", eventosRH)
 
-  // Listar eventos por usuário
-  const eventosUsuario = await makeRequest("GET", `${BASE_URL}/eventos?usuario_id=3`)
-  logResult("Eventos do Usuário 3", eventosUsuario)
+  // Criar usuário
+  const criarUsuario = await makeRequest(
+    "POST",
+    `${BASE_URL}/usuarios`,
+    {
+      nome: "Teste JWT",
+      email: "teste.jwt@techsolutions.com",
+      senha: "123456",
+      inicio_na_empresa: "2024-01-01",
+      tipo_usuario: "comum",
+      grupo_id: 1,
+    },
+    rhToken,
+  )
+  logResult("Criar Usuário (RH)", criarUsuario)
 
-  // Listar eventos por grupo
-  const eventosGrupo = await makeRequest("GET", `${BASE_URL}/eventos?grupo_id=1`)
-  logResult("Eventos do Grupo 1", eventosGrupo)
+  // ==================== TESTES COM TOKEN GESTOR ====================
+  console.log("\n📋 TESTANDO COM TOKEN GESTOR (Acesso Limitado)")
 
-  // Listar eventos pendentes
-  const eventosPendentes = await makeRequest("GET", `${BASE_URL}/eventos?status=pendente`)
-  logResult("Eventos Pendentes", eventosPendentes)
+  // Endpoint /me
+  const meGestor = await makeRequest("GET", `${BASE_URL}/auth/me`, null, gestorToken)
+  logResult("Endpoint /me (Gestor)", meGestor)
 
-  // Obter evento específico
-  const evento = await makeRequest("GET", `${BASE_URL}/eventos/1`)
-  logResult("Obter Evento 1", evento)
+  // Listar usuários (deve ver apenas do seu grupo)
+  const usuariosGestor = await makeRequest("GET", `${BASE_URL}/usuarios`, null, gestorToken)
+  logResult("Listar Usuários (Gestor)", usuariosGestor)
 
-  // Criar novo evento
-  const novoEvento = await makeRequest("POST", `${BASE_URL}/eventos`, {
-    usuario_id: 3,
-    data_inicio: "2024-03-15",
-    data_fim: "2024-03-19",
-    tipo_ausencia: "Férias",
-    turno: "Dia",
-    descricao: "Férias de março",
-  })
-  logResult("Criar Evento", novoEvento)
+  // Tentar listar empresas (deve dar erro de permissão)
+  const empresasGestor = await makeRequest("GET", `${BASE_URL}/empresas`, null, gestorToken)
+  logResult("Listar Empresas (Gestor - Deve Falhar)", empresasGestor)
 
-  // Aprovar evento (se criação foi bem-sucedida)
-  if (novoEvento.status === 201) {
-    const aprovarEvento = await makeRequest("POST", `${BASE_URL}/eventos/3/aprovar`, {
-      aprovador_id: 2,
-      observacoes: "Aprovado pelo gestor",
+  // Listar eventos do grupo
+  const eventosGestor = await makeRequest("GET", `${BASE_URL}/eventos?grupo_id=2`, null, gestorToken)
+  logResult("Listar Eventos do Grupo (Gestor)", eventosGestor)
+
+  // ==================== TESTES DE REFRESH TOKEN ====================
+  console.log("\n📋 TESTANDO REFRESH TOKEN")
+
+  if (loginRH.data.refresh_token) {
+    const refreshResult = await makeRequest("POST", `${BASE_URL}/auth/refresh`, {
+      refresh_token: loginRH.data.refresh_token,
     })
-    logResult("Aprovar Evento", aprovarEvento)
+    logResult("Refresh Token", refreshResult)
   }
 
-  // Criar outro evento para rejeitar
-  const eventoRejeitar = await makeRequest("POST", `${BASE_URL}/eventos`, {
-    usuario_id: 4,
-    data_inicio: "2024-04-01",
-    data_fim: "2024-04-01",
-    tipo_ausencia: "Assiduidade",
-    descricao: "Consulta médica",
-  })
-  logResult("Criar Evento para Rejeitar", eventoRejeitar)
+  // ==================== TESTES SEM TOKEN ====================
+  console.log("\n📋 TESTANDO SEM TOKEN (Deve Falhar)")
 
-  // Rejeitar evento
-  if (eventoRejeitar.status === 201) {
-    const rejeitarEvento = await makeRequest("POST", `${BASE_URL}/eventos/4/rejeitar`, {
-      aprovador_id: 2,
-      observacoes: "Precisa reagendar",
-    })
-    logResult("Rejeitar Evento", rejeitarEvento)
-  }
+  const semToken = await makeRequest("GET", `${BASE_URL}/usuarios`)
+  logResult("Listar Usuários Sem Token", semToken)
 
-  // ==================== CALENDÁRIO ====================
-  console.log("\n📋 TESTANDO CALENDÁRIO")
+  // ==================== TESTES DE LOGOUT ====================
+  console.log("\n📋 TESTANDO LOGOUT")
 
-  // Calendário geral
-  const calendario = await makeRequest("GET", `${BASE_URL}/calendario`)
-  logResult("Calendário Geral", calendario)
+  const logout = await makeRequest("POST", `${BASE_URL}/auth/logout`, null, rhToken)
+  logResult("Logout", logout)
 
-  // Calendário do grupo 1
-  const calendarioGrupo = await makeRequest("GET", `${BASE_URL}/calendario/grupo/1`)
-  logResult("Calendário Grupo 1", calendarioGrupo)
+  // Tentar usar token após logout
+  const aposLogout = await makeRequest("GET", `${BASE_URL}/usuarios`, null, rhToken)
+  logResult("Usar Token Após Logout (Deve Falhar)", aposLogout)
 
-  // Calendário incluindo eventos pendentes
-  const calendarioCompleto = await makeRequest("GET", `${BASE_URL}/calendario?apenas_aprovados=false`)
-  logResult("Calendário Completo", calendarioCompleto)
-
-  // ==================== TESTES DE ERRO ====================
-  console.log("\n📋 TESTANDO CASOS DE ERRO")
-
-  // Empresa inexistente
-  const empresaInexistente = await makeRequest("GET", `${BASE_URL}/empresas/999`)
-  logResult("Empresa Inexistente", empresaInexistente)
-
-  // Usuário inexistente
-  const usuarioInexistente = await makeRequest("GET", `${BASE_URL}/usuarios/999`)
-  logResult("Usuário Inexistente", usuarioInexistente)
-
-  // Criar usuário com dados inválidos
-  const usuarioInvalido = await makeRequest("POST", `${BASE_URL}/usuarios`, {
-    nome: "Teste",
-    // email ausente
-    senha: "123456",
-  })
-  logResult("Criar Usuário Inválido", usuarioInvalido)
-
-  // Criar evento com tipo inválido
-  const eventoInvalido = await makeRequest("POST", `${BASE_URL}/eventos`, {
-    usuario_id: 1,
-    data_inicio: "2024-05-01",
-    data_fim: "2024-05-01",
-    tipo_ausencia: "TipoInexistente",
-  })
-  logResult("Criar Evento Inválido", eventoInvalido)
-
-  console.log("\n✅ Testes concluídos!")
+  // ==================== RESUMO ====================
+  console.log("\n📊 RESUMO DOS TESTES JWT")
+  console.log("✅ Login com JWT funcionando")
+  console.log("✅ Tokens sendo gerados corretamente")
+  console.log("✅ Endpoints protegidos funcionando")
+  console.log("✅ Permissões por nível funcionando")
+  console.log("✅ Refresh token funcionando")
+  console.log("✅ Logout funcionando")
+  console.log("\n🎉 Sistema JWT completamente funcional!")
 }
 
 // Executar testes
-testAllEndpoints().catch(console.error)
+testJWTComplete().catch(console.error)

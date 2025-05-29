@@ -5,9 +5,9 @@
 API Flask para gestão hierárquica de eventos corporativos com sistema de aprovação baseado em níveis de usuário.
 
 ### 🎯 Modelo Hierárquico
-```
+\`\`\`
 Empresa → Grupo → Usuário → Evento
-```
+\`\`\`
 
 ### 👥 Tipos de Usuário
 - **RH**: Acesso total ao sistema
@@ -20,30 +20,56 @@ Empresa → Grupo → Usuário → Evento
 
 | Módulo | Endpoints | Funcionalidades |
 |--------|-----------|----------------|
-| **Autenticação** | 1 | Login com validação |
+| **Autenticação** | 4 | Login, refresh, me, logout |
 | **Empresas** | 5 | CRUD completo |
 | **Grupos** | 6 | CRUD + estatísticas |
 | **Usuários** | 5 | CRUD com filtros |
 | **Eventos** | 7 | CRUD + aprovação |
 | **Calendário** | 2 | Visualização de eventos |
-| **TOTAL** | **26** | **Funcionalidades** |
+| **TOTAL** | **29** | **Funcionalidades** |
 
 ---
 
-## 🔐 1. AUTENTICAÇÃO
+## 🔐 1. AUTENTICAÇÃO (4 Funcionalidades)
 
 ### `POST /api/auth/login`
-**Funcionalidade**: Autenticação de usuários
+**Funcionalidade**: Autenticação de usuários com JWT
 - **Entrada**: `email`, `senha`
-- **Saída**: Dados do usuário autenticado
+- **Saída**: `access_token`, `refresh_token`, dados do usuário
 - **Status**: 200 (sucesso), 401 (credenciais inválidas)
 
-```json
+\`\`\`json
 {
   "email": "maria.rh@techsolutions.com",
   "senha": "123456"
 }
-```
+\`\`\`
+
+**Resposta de sucesso:**
+\`\`\`json
+{
+  "autenticado": true,
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "usuario": { ... }
+}
+\`\`\`
+
+### `POST /api/auth/refresh`
+**Funcionalidade**: Renovar token de acesso
+- **Entrada**: `refresh_token`
+- **Saída**: Novo `access_token`
+
+### `GET /api/auth/me`
+**Funcionalidade**: Dados do usuário atual
+- **Headers**: `Authorization: Bearer <token>`
+- **Saída**: Dados completos do usuário logado
+
+### `POST /api/auth/logout`
+**Funcionalidade**: Logout (invalidar sessão)
+- **Headers**: `Authorization: Bearer <token>`
 
 ---
 
@@ -53,26 +79,36 @@ Empresa → Grupo → Usuário → Evento
 **Funcionalidade**: Listar todas as empresas
 - **Filtros**: `?ativas=true/false`
 - **Retorna**: Array de empresas com estatísticas
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `GET /api/empresas/{id}`
 **Funcionalidade**: Obter empresa específica
 - **Retorna**: Dados completos da empresa + total de grupos
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `POST /api/empresas`
 **Funcionalidade**: Criar nova empresa
 - **Campos obrigatórios**: `nome`
 - **Campos opcionais**: `cnpj`, `endereco`, `telefone`, `email`
 - **Validações**: CNPJ único, email único
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `PUT /api/empresas/{id}`
 **Funcionalidade**: Atualizar empresa existente
 - **Permite**: Atualização parcial de qualquer campo
 - **Validações**: Integridade de dados únicos
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `DELETE /api/empresas/{id}`
 **Funcionalidade**: Desativar empresa (soft delete)
 - **Ação**: Define `ativa = false`
 - **Preserva**: Dados históricos
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ---
 
@@ -82,27 +118,39 @@ Empresa → Grupo → Usuário → Evento
 **Funcionalidade**: Listar grupos
 - **Filtros**: `?empresa_id=1`, `?ativos=true/false`
 - **Retorna**: Grupos com nome da empresa e total de usuários
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor
 
 ### `GET /api/grupos/{id}`
 **Funcionalidade**: Obter grupo específico
 - **Retorna**: Dados completos do grupo + estatísticas
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor
 
 ### `POST /api/grupos`
 **Funcionalidade**: Criar novo grupo
 - **Campos obrigatórios**: `nome`, `empresa_id`
 - **Campos opcionais**: `descricao`
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `PUT /api/grupos/{id}`
 **Funcionalidade**: Atualizar grupo existente
 - **Permite**: Atualização de nome, descrição, empresa
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `DELETE /api/grupos/{id}`
 **Funcionalidade**: Desativar grupo (soft delete)
 - **Ação**: Define `ativo = false`
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ### `GET /api/grupos/{id}/estatisticas`
 **Funcionalidade**: Estatísticas detalhadas do grupo
 - **Retorna**: Total de usuários, eventos pendentes/aprovados
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor
 
 ---
 
@@ -115,25 +163,35 @@ Empresa → Grupo → Usuário → Evento
   - `?tipo_usuario=gestor` - Por tipo (rh/gestor/comum)
   - `?ativos=true/false` - Por status
 - **Retorna**: Lista com nome do grupo e férias tiradas
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `GET /api/usuarios/{id}`
 **Funcionalidade**: Obter usuário específico
 - **Retorna**: Dados completos + férias tiradas no ano
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `POST /api/usuarios`
 **Funcionalidade**: Criar novo usuário
 - **Campos obrigatórios**: `nome`, `email`, `senha`, `inicio_na_empresa`
 - **Campos opcionais**: `tipo_usuario`, `grupo_id`
 - **Validações**: Email único, tipo válido
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor
 
 ### `PUT /api/usuarios/{id}`
 **Funcionalidade**: Atualizar usuário existente
 - **Permite**: Atualização de qualquer campo incluindo senha
 - **Validações**: Integridade de dados
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor
 
 ### `DELETE /api/usuarios/{id}`
 **Funcionalidade**: Desativar usuário (soft delete)
 - **Ação**: Define `ativo = false`
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH
 
 ---
 
@@ -146,37 +204,51 @@ Empresa → Grupo → Usuário → Evento
   - `?grupo_id=1` - Eventos de um grupo
   - `?status=pendente` - Por status (pendente/aprovado/rejeitado)
 - **Retorna**: Lista com nome do usuário e aprovador
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `GET /api/eventos/{id}`
 **Funcionalidade**: Obter evento específico
 - **Retorna**: Dados completos + histórico de aprovação
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `POST /api/eventos`
 **Funcionalidade**: Criar novo evento
 - **Campos obrigatórios**: `usuario_id`, `data_inicio`, `data_fim`, `tipo_ausencia`
 - **Campos opcionais**: `turno`, `descricao`
 - **Status inicial**: `pendente`
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `PUT /api/eventos/{id}`
 **Funcionalidade**: Atualizar evento existente
 - **Permite**: Modificação de datas, tipo, descrição
 - **Recalcula**: Total de dias automaticamente
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `DELETE /api/eventos/{id}`
 **Funcionalidade**: Deletar evento (hard delete)
 - **Ação**: Remove permanentemente do banco
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor
 
 ### `POST /api/eventos/{id}/aprovar`
 **Funcionalidade**: Aprovar evento
 - **Requer**: `aprovador_id`, `observacoes` (opcional)
 - **Permissões**: Apenas gestores e RH
 - **Registra**: Data e observações da aprovação
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: Gestor, RH
 
 ### `POST /api/eventos/{id}/rejeitar`
 **Funcionalidade**: Rejeitar evento
 - **Requer**: `aprovador_id`, `observacoes` (opcional)
 - **Permissões**: Apenas gestores e RH
 - **Registra**: Data e motivo da rejeição
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: Gestor, RH
 
 ---
 
@@ -187,12 +259,16 @@ Empresa → Grupo → Usuário → Evento
 - **Filtros**: `?apenas_aprovados=true/false`
 - **Formato**: Compatível com bibliotecas de calendário (FullCalendar)
 - **Cores**: Por tipo de ausência
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ### `GET /api/calendario/grupo/{id}`
 **Funcionalidade**: Calendário específico de um grupo
 - **Filtros**: `?apenas_aprovados=true/false`
 - **Retorna**: Eventos + metadados do grupo
 - **Uso**: Calendário compartilhado do grupo
+**Autenticação**: Requer `Authorization: Bearer <token>`
+**Permissões**: RH, Gestor, Comum
 
 ---
 
@@ -309,7 +385,7 @@ Empresa → Grupo → Usuário → Evento
 
 ## 📊 Métricas da API
 
-- **Total de Endpoints**: 26
+- **Total de Endpoints**: 29
 - **Módulos**: 6
 - **Tipos de Operação**: CRUD + Aprovação + Relatórios
 - **Níveis de Permissão**: 3

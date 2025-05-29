@@ -1,0 +1,585 @@
+🔐 Testando API Flask com JWT completo...
+
+📋 TESTANDO AUTENTICAÇÃO JWT
+
+=== Login RH ===
+Status: 200
+✅ SUCESSO
+Response: { access_token: '***', refresh_token: '***', usuario: {...} }
+🔑 Token RH capturado com sucesso!
+
+=== Login Gestor ===
+Status: 200
+✅ SUCESSO
+Response: { access_token: '***', refresh_token: '***', usuario: {...} }
+🔑 Token Gestor capturado com sucesso!
+
+📋 TESTANDO COM TOKEN RH (Acesso Total)
+
+=== Endpoint /me (RH) ===
+Status: 200
+✅ SUCESSO
+Response: {
+  "usuario": {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.073185",
+    "email": "maria.rh@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Recursos Humanos",
+    "id": 1,
+    "inicio_na_empresa": "2020-01-15",
+    "nome": "Maria Silva",
+    "tipo_usuario": "rh"
+  }
+}
+
+=== Listar Empresas (RH) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "ativa": true,
+    "cnpj": "12.345.678/0001-90",
+    "criado_em": "2025-05-28T05:38:35.899753",
+    "email": "contato@techsolutions.com",
+    "endereco": "Rua das Flores, 123 - São Paulo/SP",
+    "id": 1,
+    "nome": "Tech Solutions LTDA",
+    "telefone": "(11) 1234-5678",
+    "total_grupos": 3
+  }
+]
+
+=== Listar Grupos (RH) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:35.916568",
+    "descricao": "Equipe de recursos humanos",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 1,
+    "nome": "Recursos Humanos",
+    "total_usuarios": 1
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:35.932335",
+    "descricao": "Equipe de desenvolvimento de software",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 2,
+    "nome": "Desenvolvimento",
+    "total_usuarios": 3
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:35.945253",
+    "descricao": "Equipe de marketing e vendas",
+    "empresa_id": 1,
+    "empresa_nome": "Tech Solutions LTDA",
+    "id": 3,
+    "nome": "Marketing",
+    "total_usuarios": 1
+  }
+]
+
+=== Listar Usuários (RH) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.073185",
+    "email": "maria.rh@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Recursos Humanos",
+    "id": 1,
+    "inicio_na_empresa": "2020-01-15",
+    "nome": "Maria Silva",
+    "tipo_usuario": "rh"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.198239",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.319890",
+    "email": "ana.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 3,
+    "inicio_na_empresa": "2022-06-01",
+    "nome": "Ana Costa",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.448007",
+    "email": "carlos.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 4,
+    "inicio_na_empresa": "2023-01-20",
+    "nome": "Carlos Oliveira",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.569837",
+    "email": "lucia.marketing@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 3,
+    "grupo_nome": "Marketing",
+    "id": 5,
+    "inicio_na_empresa": "2022-09-15",
+    "nome": "Lucia Ferreira",
+    "tipo_usuario": "comum"
+  }
+]
+
+=== Listar Eventos (RH) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.586570",
+    "data_aprovacao": null,
+    "data_fim": "2024-02-19",
+    "data_inicio": "2024-02-15",
+    "descricao": "Férias de carnaval",
+    "id": 1,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.602151",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-01",
+    "data_inicio": "2024-03-01",
+    "descricao": "Consulta médica (Assiduidade)",
+    "id": 2,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.614992",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Plantão extra",
+    "id": 3,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Plantão",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.627552",
+    "data_aprovacao": null,
+    "data_fim": "2024-05-10",
+    "data_inicio": "2024-05-01",
+    "descricao": "Licença maternidade",
+    "id": 4,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Licença Maternidade/Paternidade",
+    "total_dias": 10,
+    "turno": null,
+    "usuario_id": 1,
+    "usuario_nome": "Maria Silva"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.640020",
+    "data_aprovacao": null,
+    "data_fim": "2024-06-15",
+    "data_inicio": "2024-06-15",
+    "descricao": "Evento especial da empresa",
+    "id": 5,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Evento Especial",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 5,
+    "usuario_nome": "Lucia Ferreira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.652433",
+    "data_aprovacao": null,
+    "data_fim": "2024-07-25",
+    "data_inicio": "2024-07-20",
+    "descricao": "Licença geral",
+    "id": 6,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Licença (Geral)",
+    "total_dias": 6,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:49.878609",
+    "data_aprovacao": null,
+    "data_fim": "2024-08-05",
+    "data_inicio": "2024-08-01",
+    "descricao": null,
+    "id": 7,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:49.909267",
+    "data_aprovacao": null,
+    "data_fim": "2024-07-05",
+    "data_inicio": "2024-07-01",
+    "descricao": null,
+    "id": 8,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 5,
+    "usuario_nome": "Lucia Ferreira"
+  }
+]
+
+=== Criar Usuário (RH) ===
+Status: 201
+✅ SUCESSO
+Response: {
+  "ativo": true,
+  "criado_em": "2025-05-29T19:49:06.664948",
+  "email": "teste.jwt@techsolutions.com",
+  "ferias_tiradas": 0,
+  "grupo_id": 1,
+  "grupo_nome": "Recursos Humanos",
+  "id": 6,
+  "inicio_na_empresa": "2024-01-01",
+  "nome": "Teste JWT",
+  "tipo_usuario": "comum"
+}
+
+📋 TESTANDO COM TOKEN GESTOR (Acesso Limitado)
+
+=== Endpoint /me (Gestor) ===
+Status: 200
+✅ SUCESSO
+Response: {
+  "usuario": {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.198239",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  }
+}
+
+=== Listar Usuários (Gestor) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.198239",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.319890",
+    "email": "ana.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 3,
+    "inicio_na_empresa": "2022-06-01",
+    "nome": "Ana Costa",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.448007",
+    "email": "carlos.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 4,
+    "inicio_na_empresa": "2023-01-20",
+    "nome": "Carlos Oliveira",
+    "tipo_usuario": "comum"
+  }
+]
+
+=== Listar Empresas (Gestor - Deve Falhar) ===
+Status: 403
+❌ ERRO
+Response: {
+  "erro": "Sem permissão para listar empresas"
+}
+
+=== Listar Eventos do Grupo (Gestor) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.586570",
+    "data_aprovacao": null,
+    "data_fim": "2024-02-19",
+    "data_inicio": "2024-02-15",
+    "descricao": "Férias de carnaval",
+    "id": 1,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.602151",
+    "data_aprovacao": null,
+    "data_fim": "2024-03-01",
+    "data_inicio": "2024-03-01",
+    "descricao": "Consulta médica (Assiduidade)",
+    "id": 2,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Assiduidade",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.614992",
+    "data_aprovacao": null,
+    "data_fim": "2024-04-01",
+    "data_inicio": "2024-04-01",
+    "descricao": "Plantão extra",
+    "id": 3,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Plantão",
+    "total_dias": 1,
+    "turno": null,
+    "usuario_id": 3,
+    "usuario_nome": "Ana Costa"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:36.652433",
+    "data_aprovacao": null,
+    "data_fim": "2024-07-25",
+    "data_inicio": "2024-07-20",
+    "descricao": "Licença geral",
+    "id": 6,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Licença (Geral)",
+    "total_dias": 6,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  },
+  {
+    "aprovado_por_id": null,
+    "aprovado_por_nome": null,
+    "criado_em": "2025-05-28T05:38:49.878609",
+    "data_aprovacao": null,
+    "data_fim": "2024-08-05",
+    "data_inicio": "2024-08-01",
+    "descricao": null,
+    "id": 7,
+    "observacoes_aprovacao": null,
+    "status": "pendente",
+    "tipo_ausencia": "Férias",
+    "total_dias": 5,
+    "turno": null,
+    "usuario_id": 4,
+    "usuario_nome": "Carlos Oliveira"
+  }
+]
+
+📋 TESTANDO REFRESH TOKEN
+
+=== Refresh Token ===
+Status: 200
+✅ SUCESSO
+Response: { access_token: '***', refresh_token: '***', usuario: {...} }
+
+📋 TESTANDO SEM TOKEN (Deve Falhar)
+
+=== Listar Usuários Sem Token ===
+Status: 401
+❌ ERRO
+Response: {
+  "erro": "Token de autenticação necessário"
+}
+
+📋 TESTANDO LOGOUT
+
+=== Logout ===
+Status: 200
+✅ SUCESSO
+Response: {
+  "message": "Logout realizado com sucesso"
+}
+
+=== Usar Token Após Logout (Deve Falhar) ===
+Status: 200
+✅ SUCESSO
+Response: [
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.073185",
+    "email": "maria.rh@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Recursos Humanos",
+    "id": 1,
+    "inicio_na_empresa": "2020-01-15",
+    "nome": "Maria Silva",
+    "tipo_usuario": "rh"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.198239",
+    "email": "joao.gestor@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 2,
+    "inicio_na_empresa": "2021-03-10",
+    "nome": "João Santos",
+    "tipo_usuario": "gestor"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.319890",
+    "email": "ana.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 3,
+    "inicio_na_empresa": "2022-06-01",
+    "nome": "Ana Costa",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.448007",
+    "email": "carlos.dev@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 2,
+    "grupo_nome": "Desenvolvimento",
+    "id": 4,
+    "inicio_na_empresa": "2023-01-20",
+    "nome": "Carlos Oliveira",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-28T05:38:36.569837",
+    "email": "lucia.marketing@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 3,
+    "grupo_nome": "Marketing",
+    "id": 5,
+    "inicio_na_empresa": "2022-09-15",
+    "nome": "Lucia Ferreira",
+    "tipo_usuario": "comum"
+  },
+  {
+    "ativo": true,
+    "criado_em": "2025-05-29T19:49:06.664948",
+    "email": "teste.jwt@techsolutions.com",
+    "ferias_tiradas": 0,
+    "grupo_id": 1,
+    "grupo_nome": "Recursos Humanos",
+    "id": 6,
+    "inicio_na_empresa": "2024-01-01",
+    "nome": "Teste JWT",
+    "tipo_usuario": "comum"
+  }
+]
+
+📊 RESUMO DOS TESTES JWT
+✅ Login com JWT funcionando
+✅ Tokens sendo gerados corretamente
+✅ Endpoints protegidos funcionando
+✅ Permissões por nível funcionando
+✅ Refresh token funcionando
+✅ Logout funcionando
+
+🎉 Sistema JWT completamente funcional!

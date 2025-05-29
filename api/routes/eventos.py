@@ -8,13 +8,14 @@ from ..database.crud import (
 )
 from ..database.models import TipoAusencia, Turno, StatusEvento, TipoUsuario
 from ..middleware.auth import (
-    requer_permissao_evento, filtrar_por_escopo_usuario,
+    jwt_required, requer_permissao_evento, filtrar_por_escopo_usuario,
     extrair_usuario_id_do_token, verificar_permissao_usuario_target
 )
 
 eventos_bp = Blueprint('eventos', __name__)
 
 @eventos_bp.route('', methods=['GET'])
+@jwt_required
 def listar():
     """Lista eventos com base no escopo do usuário"""
     try:
@@ -62,6 +63,7 @@ def listar():
         return jsonify({"erro": str(e)}), 500
 
 @eventos_bp.route('/<int:evento_id>', methods=['GET'])
+@jwt_required
 @requer_permissao_evento
 def obter(evento_id: int):
     """Obtém um evento específico"""
@@ -74,6 +76,7 @@ def obter(evento_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @eventos_bp.route('', methods=['POST'])
+@jwt_required
 def criar():
     """Cria um novo evento"""
     dados: Dict[str, Any] = request.get_json(force=True)
@@ -117,6 +120,7 @@ def criar():
         return jsonify({"erro": str(e)}), 500
 
 @eventos_bp.route('/<int:evento_id>', methods=['PUT'])
+@jwt_required
 @requer_permissao_evento
 def atualizar(evento_id: int):
     """Atualiza um evento"""
@@ -156,7 +160,7 @@ def atualizar(evento_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @eventos_bp.route('/<int:evento_id>', methods=['DELETE'])
-# @requer_permissao_evento
+@jwt_required
 def deletar(evento_id: int):
     """Deleta um evento"""
     try:
@@ -186,9 +190,9 @@ def deletar(evento_id: int):
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
-    
 
 @eventos_bp.route('/<int:evento_id>/aprovar', methods=['POST'])
+@jwt_required
 @requer_permissao_evento
 def aprovar(evento_id: int):
     """Aprova um evento"""
@@ -227,6 +231,7 @@ def aprovar(evento_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @eventos_bp.route('/<int:evento_id>/rejeitar', methods=['POST'])
+@jwt_required
 @requer_permissao_evento
 def rejeitar(evento_id: int):
     """Rejeita um evento"""

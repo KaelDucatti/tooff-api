@@ -5,26 +5,26 @@ API Flask para gestão de eventos, usuários e grupos em empresas, com sistema d
 ## Estrutura do Projeto
 
 ```
-├── app.py                 
-├── requirements.txt       
-├── .env.example          
+├── app.py                 # Aplicação principal Flask
+├── requirements.txt       # Dependências Python
+├── .env.example          # Exemplo de variáveis de ambiente
 ├── api/
 │   ├── __init__.py
 │   ├── database/
 │   │   ├── __init__.py
-│   │   ├── models.py     
-│   │   └── crud.py       
+│   │   ├── models.py     # Modelos SQLAlchemy
+│   │   └── crud.py       # Operações CRUD
 │   └── routes/
 │       ├── __init__.py
-│       ├── auth.py       
-│       ├── empresas.py   
-│       ├── grupos.py     
-│       ├── usuarios.py   
-│       ├── eventos.py    
-│       └── calendario.py 
-├── database/             
+│       ├── auth.py       # Autenticação
+│       ├── empresas.py   # CRUD Empresas
+│       ├── grupos.py     # CRUD Grupos
+│       ├── usuarios.py   # CRUD Usuários
+│       ├── eventos.py    # CRUD Eventos
+│       └── calendario.py # Calendário
+├── database/             # Diretório do banco SQLite
 ├── scripts/
-│   └── seed_data.py     
+│   └── seed_data.py     # Script para dados de exemplo
 └── README.md
 ```
 
@@ -55,6 +55,35 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 # Edite o arquivo .env conforme necessário
+```
+
+**Variáveis obrigatórias:**
+- `SECRET_KEY`: Chave secreta do Flask
+- `JWT_SECRET_KEY`: Chave secreta para JWT
+- `DATABASE_URL`: URL do banco de dados
+
+## Autenticação JWT
+
+A API utiliza JWT (JSON Web Tokens) para autenticação:
+
+### Login
+```bash
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email": "maria.rh@techsolutions.com", "senha": "123456"}'
+```
+
+### Usando o Token
+```bash
+curl -X GET http://localhost:5000/api/usuarios \
+  -H "Authorization: Bearer <access_token>"
+```
+
+### Renovar Token
+```bash
+curl -X POST http://localhost:5000/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refresh_token": "<refresh_token>"}'
 ```
 
 4. Execute o script para criar dados de exemplo:
@@ -112,12 +141,22 @@ Após executar o script de dados de exemplo:
 - **Dev**: carlos.dev@techsolutions.com / 123456
 - **Marketing**: lucia.marketing@techsolutions.com / 123456
 
-## Próximos Passos
+## Status Atual
 
-1. Implementar autenticação JWT
-2. Adicionar middleware de autorização
-3. Implementar validações mais robustas
-4. Adicionar testes unitários
-5. Documentação da API com Swagger
+✅ **IMPLEMENTADO:**
+- Autenticação JWT completa (access + refresh tokens)
+- Middleware de autorização por escopo
+- Sistema de permissões hierárquico
+- Validações robustas de dados
+- Testes completos da API
+- Documentação detalhada
+
+## Próximos Passos Opcionais
+
+1. Paginação para listas grandes
+2. Health check endpoint
+3. Sistema de logging avançado
+4. Documentação OpenAPI/Swagger
+5. Rate limiting
 6. Sistema de notificações
 7. Relatórios e dashboards

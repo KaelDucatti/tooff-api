@@ -7,6 +7,7 @@ from ..database.crud import (
     atualizar_empresa, deletar_empresa, empresa_para_dict
 )
 from ..middleware.auth import (
+    jwt_required, get_current_user_id, get_current_user_tipo,
     requer_permissao_empresa, filtrar_por_escopo_usuario, 
     extrair_usuario_id_do_token
 )
@@ -15,6 +16,7 @@ from ..database.models import TipoUsuario
 empresas_bp = Blueprint('empresas', __name__)
 
 @empresas_bp.route('', methods=['GET'])
+@jwt_required
 def listar():
     """Lista empresas com base no escopo do usuário"""
     try:
@@ -42,6 +44,7 @@ def listar():
         return jsonify({"erro": str(e)}), 500
 
 @empresas_bp.route('/<int:empresa_id>', methods=['GET'])
+@jwt_required
 @requer_permissao_empresa
 def obter(empresa_id: int):
     """Obtém uma empresa específica"""
@@ -54,6 +57,7 @@ def obter(empresa_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @empresas_bp.route('', methods=['POST'])
+@jwt_required
 def criar():
     """Cria uma nova empresa (apenas RH da mesma empresa)"""
     dados: Dict[str, Any] = request.get_json(force=True)
@@ -90,6 +94,7 @@ def criar():
         return jsonify({"erro": str(e)}), 500
 
 @empresas_bp.route('/<int:empresa_id>', methods=['PUT'])
+@jwt_required
 @requer_permissao_empresa
 def atualizar(empresa_id: int):
     """Atualiza uma empresa"""
@@ -120,6 +125,7 @@ def atualizar(empresa_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @empresas_bp.route('/<int:empresa_id>', methods=['DELETE'])
+@jwt_required
 @requer_permissao_empresa
 def deletar(empresa_id: int):
     """Desativa uma empresa"""

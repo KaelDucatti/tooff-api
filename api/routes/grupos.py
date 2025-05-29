@@ -7,7 +7,7 @@ from ..database.crud import (
     estatisticas_grupo
 )
 from ..middleware.auth import (
-    requer_permissao_grupo, filtrar_por_escopo_usuario,
+    jwt_required, requer_permissao_grupo, filtrar_por_escopo_usuario,
     extrair_usuario_id_do_token, verificar_permissao_empresa
 )
 from ..database.models import TipoUsuario
@@ -15,6 +15,7 @@ from ..database.models import TipoUsuario
 grupos_bp = Blueprint('grupos', __name__)
 
 @grupos_bp.route('', methods=['GET'])
+@jwt_required
 def listar():
     """Lista grupos com base no escopo do usuário"""
     try:
@@ -46,6 +47,7 @@ def listar():
         return jsonify({"erro": str(e)}), 500
 
 @grupos_bp.route('/<int:grupo_id>', methods=['GET'])
+@jwt_required
 @requer_permissao_grupo
 def obter(grupo_id: int):
     """Obtém um grupo específico"""
@@ -58,6 +60,7 @@ def obter(grupo_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @grupos_bp.route('', methods=['POST'])
+@jwt_required
 def criar():
     """Cria um novo grupo"""
     dados: Dict[str, Any] = request.get_json(force=True)
@@ -90,6 +93,7 @@ def criar():
         return jsonify({"erro": str(e)}), 500
 
 @grupos_bp.route('/<int:grupo_id>', methods=['PUT'])
+@jwt_required
 @requer_permissao_grupo
 def atualizar(grupo_id: int):
     """Atualiza um grupo"""
@@ -113,6 +117,7 @@ def atualizar(grupo_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @grupos_bp.route('/<int:grupo_id>', methods=['DELETE'])
+@jwt_required
 @requer_permissao_grupo
 def deletar(grupo_id: int):
     """Desativa um grupo"""
@@ -134,6 +139,7 @@ def deletar(grupo_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @grupos_bp.route('/<int:grupo_id>/estatisticas', methods=['GET'])
+@jwt_required
 @requer_permissao_grupo
 def obter_estatisticas(grupo_id: int):
     """Obtém estatísticas de um grupo"""

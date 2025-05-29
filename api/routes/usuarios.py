@@ -8,13 +8,14 @@ from ..database.crud import (
 )
 from ..database.models import TipoUsuario
 from ..middleware.auth import (
-    requer_permissao_usuario, filtrar_por_escopo_usuario,
+    jwt_required, requer_permissao_usuario, filtrar_por_escopo_usuario,
     extrair_usuario_id_do_token, verificar_permissao_grupo
 )
 
 usuarios_bp = Blueprint('usuarios', __name__)
 
 @usuarios_bp.route('', methods=['GET'])
+@jwt_required
 def listar():
     """Lista usuários com base no escopo do usuário logado"""
     try:
@@ -69,6 +70,7 @@ def listar():
         return jsonify({"erro": str(e)}), 500
 
 @usuarios_bp.route('/<int:usuario_target_id>', methods=['GET'])
+@jwt_required
 @requer_permissao_usuario
 def obter(usuario_target_id: int):
     """Obtém um usuário específico"""
@@ -81,6 +83,7 @@ def obter(usuario_target_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @usuarios_bp.route('', methods=['POST'])
+@jwt_required
 def criar():
     """Cria um novo usuário"""
     dados: Dict[str, Any] = request.get_json(force=True)
@@ -131,6 +134,7 @@ def criar():
         return jsonify({"erro": str(e)}), 500
 
 @usuarios_bp.route('/<int:usuario_target_id>', methods=['PUT'])
+@jwt_required
 @requer_permissao_usuario
 def atualizar(usuario_target_id: int):
     """Atualiza um usuário"""
@@ -174,6 +178,7 @@ def atualizar(usuario_target_id: int):
         return jsonify({"erro": str(e)}), 500
 
 @usuarios_bp.route('/<int:usuario_target_id>', methods=['DELETE'])
+@jwt_required
 @requer_permissao_usuario
 def deletar(usuario_target_id: int):
     """Desativa um usuário"""
@@ -181,7 +186,6 @@ def deletar(usuario_target_id: int):
         usuario_id = extrair_usuario_id_do_token()
         if usuario_id is None:
             return jsonify({"erro": "Token de autenticação necessário"}), 401
-
         from ..database.crud import obter_usuario as get_user
         usuario_logado = get_user(usuario_id)
         

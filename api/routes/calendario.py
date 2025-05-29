@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 
 from ..database.crud import eventos_para_calendario
+from ..middleware.auth import jwt_required
 
 calendario_bp = Blueprint('calendario', __name__)
 
 @calendario_bp.route('', methods=['GET'])
+@jwt_required
 def obter_calendario():
     """Retorna eventos formatados para calendário"""
     try:
@@ -20,6 +22,7 @@ def obter_calendario():
         return jsonify({"erro": str(e)}), 500
 
 @calendario_bp.route('/grupo/<int:grupo_id>', methods=['GET'])
+@jwt_required
 def calendario_grupo(grupo_id: int):
     """Retorna calendário específico de um grupo"""
     try:
