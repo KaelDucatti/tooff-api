@@ -15,9 +15,12 @@ def generate_tokens(usuario):
     
     # Token de acesso (1 hora)
     access_payload = {
-        'user_id': usuario.id,
+        'user_cpf': usuario.cpf,
         'email': usuario.email,
-        'tipo_usuario': usuario.tipo_usuario.value,
+        'tipo_usuario': usuario.tipo_usuario,
+        'flag_gestor': usuario.flag_gestor,
+        'grupo_id': usuario.grupo_id,
+        'uf': usuario.UF,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1),
         'iat': datetime.datetime.utcnow(),
         'type': 'access'
@@ -25,7 +28,7 @@ def generate_tokens(usuario):
     
     # Token de refresh (7 dias)
     refresh_payload = {
-        'user_id': usuario.id,
+        'user_cpf': usuario.cpf,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(days=7),
         'iat': datetime.datetime.utcnow(),
         'type': 'refresh'
@@ -82,7 +85,7 @@ def refresh():
             return jsonify({"erro": "Token inválido"}), 401
         
         # Buscar usuário
-        usuario = obter_usuario(payload['user_id'])
+        usuario = obter_usuario(payload['user_cpf'])
         if not usuario:
             return jsonify({"erro": "Usuário não encontrado"}), 404
         

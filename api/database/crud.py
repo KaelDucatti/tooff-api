@@ -1,17 +1,45 @@
 from typing import List, Optional, Dict, Any
-from datetime import datetime, timedelta
+from datetime import datetime
 from sqlalchemy import select, and_, func
 
 from .models import (
-    get_session, Usuario, Empresa, Grupo, Evento, 
-    TipoUsuario, StatusEvento, TipoAusencia, Turno
+    get_session, Usuario, Empresa, Grupo, Evento, UF,
+    TipoAusencia, Turno, FeriadoNacional, FeriadoEstadual
 )
+
+# ==================== UF ====================
+
+def criar_uf(cod_uf: int, uf: str) -> UF:
+    with get_session() as session:
+        estado = UF(cod_uf=cod_uf, uf=uf)
+        session.add(estado)
+        session.commit()
+        session.refresh(estado)
+        return estado
+
+def listar_ufs() -> List[UF]:
+    with get_session() as session:
+        return list(session.execute(select(UF)).scalars().all())
+
+def obter_uf(uf: str) -> Optional[UF]:
+    with get_session() as session:
+        return session.get(UF, uf)
 
 # ==================== EMPRESAS ====================
 
-def criar_empresa(nome: str, cnpj: Optional[str] = None, **kwargs) -> Empresa:
+def criar_empresa(cnpj: int, id_empresa: int, nome: str, endereco: str, 
+                 telefone: str, email: str, **kwargs) -> Empresa:
     with get_session() as session:
-        empresa = Empresa(nome=nome, cnpj=cnpj, **kwargs)
+        empresa = Empresa(
+            cnpj=cnpj,
+            id=id_empresa,
+            nome=nome,
+            endereco=endereco,
+            telefone=telefone,
+            email=email,
+            criado_em=datetime.now().date(),
+            **kwargs
+        )
         session.add(empresa)
         session.commit()
         session.refresh(empresa)
@@ -24,13 +52,13 @@ def listar_empresas(ativas_apenas: bool = True) -> List[Empresa]:
             query = query.where(Empresa.ativa)
         return list(session.execute(query).scalars().all())
 
-def obter_empresa(empresa_id: int) -> Optional[Empresa]:
+def obter_empresa(cnpj: int) -> Optional[Empresa]:
     with get_session() as session:
-        return session.get(Empresa, empresa_id)
+        return session.get(Empresa, cnpj)
 
-def atualizar_empresa(empresa_id: int, **kwargs) -> bool:
+def atualizar_empresa(cnpj: int, **kwargs) -> bool:
     with get_session() as session:
-        empresa = session.get(Empresa, empresa_id)
+        empresa = session.get(Empresa, cnpj)
         if not empresa:
             return False
         for key, value in kwargs.items():
@@ -38,9 +66,9 @@ def atualizar_empresa(empresa_id: int, **kwargs) -> bool:
         session.commit()
         return True
 
-def deletar_empresa(empresa_id: int) -> bool:
+def deletar_empresa(cnpj: int) -> bool:
     with get_session() as session:
-        empresa = session.get(Empresa, empresa_id)
+        empresa = session.get(Empresa, cnpj)
         if not empresa:
             return False
         empresa.ativa = False
@@ -49,19 +77,27 @@ def deletar_empresa(empresa_id: int) -> bool:
 
 # ==================== GRUPOS ====================
 
-def criar_grupo(nome: str, empresa_id: int, descricao: Optional[str] = None, **kwargs) -> Grupo:
+def criar_grupo(nome: str, cnpj_empresa: int, telefone: str, 
+               descricao: Optional[str] = None, **kwargs) -> Grupo:
     with get_session() as session:
-        grupo = Grupo(nome=nome, empresa_id=empresa_id, descricao=descricao, **kwargs)
+        grupo = Grupo(
+            nome=nome,
+            cnpj_empresa=cnpj_empresa,
+            telefone=telefone,
+            descricao=descricao,
+            criado_em=datetime.now().date(),
+            **kwargs
+        )
         session.add(grupo)
         session.commit()
         session.refresh(grupo)
         return grupo
 
-def listar_grupos(empresa_id: Optional[int] = None, ativos_apenas: bool = True) -> List[Grupo]:
+def listar_grupos(cnpj_empresa: Optional[int] = None, ativos_apenas: bool = True) -> List[Grupo]:
     with get_session() as session:
         query = select(Grupo)
-        if empresa_id:
-            query = query.where(Grupo.empresa_id == empresa_id)
+        if cnpj_empresa:
+            query = query.where(Grupo.cnpj_empresa == cnpj_empresa)
         if ativos_apenas:
             query = query.where(Grupo.ativo)
         return list(session.execute(query).scalars().all())
@@ -89,21 +125,60 @@ def deletar_grupo(grupo_id: int) -> bool:
         session.commit()
         return True
 
+# ==================== TIPOS DE AUSÊNCIA ====================
+
+def criar_tipo_ausencia(descricao_ausencia: str, usa_turno: bool = False) -> TipoAusencia:
+    with get_session() as session:
+        tipo = TipoAusencia(descricao_ausencia=descricao_ausencia, usa_turno=usa_turno)
+        session.add(tipo)
+        session.commit()
+        session.refresh(tipo)
+        return tipo
+
+def listar_tipos_ausencia() -> List[TipoAusencia]:
+    with get_session() as session:
+        return list(session.execute(select(TipoAusencia)).scalars().all())
+
+def obter_tipo_ausencia(id_tipo: int) -> Optional[TipoAusencia]:
+    with get_session() as session:
+        return session.get(TipoAusencia, id_tipo)
+
+# ==================== TURNOS ====================
+
+def criar_turno(descricao_ausencia: str) -> Turno:
+    with get_session() as session:
+        turno = Turno(descricao_ausencia=descricao_ausencia)
+        session.add(turno)
+        session.commit()
+        session.refresh(turno)
+        return turno
+
+def listar_turnos() -> List[Turno]:
+    with get_session() as session:
+        return list(session.execute(select(Turno)).scalars().all())
+
+def obter_turno(turno_id: int) -> Optional[Turno]:
+    with get_session() as session:
+        return session.get(Turno, turno_id)
+
 # ==================== USUÁRIOS ====================
 
-def criar_usuario(nome: str, email: str, senha: str, inicio_na_empresa: str, 
-                 tipo_usuario: TipoUsuario = TipoUsuario.COMUM, 
-                 grupo_id: Optional[int] = None, **kwargs) -> Usuario:
+def criar_usuario(cpf: int, nome: str, email: str, senha: str, 
+                 grupo_id: int, inicio_na_empresa: str, uf: str,
+                 tipo_usuario: str = "comum", flag_gestor: str = "N", **kwargs) -> Usuario:
     with get_session() as session:
         # Converte string para date se necessário
         data_inicio = datetime.strptime(inicio_na_empresa, "%Y-%m-%d").date()
         
         usuario = Usuario(
+            cpf=cpf,
             nome=nome,
             email=email.strip().lower(),
             tipo_usuario=tipo_usuario,
             grupo_id=grupo_id,
             inicio_na_empresa=data_inicio,
+            UF=uf,
+            flag_gestor=flag_gestor,
             **kwargs
         )
         usuario.set_senha(senha)
@@ -124,7 +199,7 @@ def autenticar_usuario(email: str, senha: str) -> Optional[Usuario]:
             return usuario
         return None
 
-def listar_usuarios(grupo_id: Optional[int] = None, tipo_usuario: Optional[TipoUsuario] = None,
+def listar_usuarios(grupo_id: Optional[int] = None, tipo_usuario: Optional[str] = None,
                    ativos_apenas: bool = True) -> List[Usuario]:
     with get_session() as session:
         query = select(Usuario)
@@ -142,13 +217,13 @@ def listar_usuarios(grupo_id: Optional[int] = None, tipo_usuario: Optional[TipoU
         
         return list(session.execute(query).scalars().all())
 
-def obter_usuario(usuario_id: int) -> Optional[Usuario]:
+def obter_usuario(cpf: int) -> Optional[Usuario]:
     with get_session() as session:
-        return session.get(Usuario, usuario_id)
+        return session.get(Usuario, cpf)
 
-def atualizar_usuario(usuario_id: int, **kwargs) -> bool:
+def atualizar_usuario(cpf: int, **kwargs) -> bool:
     with get_session() as session:
-        usuario = session.get(Usuario, usuario_id)
+        usuario = session.get(Usuario, cpf)
         if not usuario:
             return False
         
@@ -163,9 +238,9 @@ def atualizar_usuario(usuario_id: int, **kwargs) -> bool:
         session.commit()
         return True
 
-def deletar_usuario(usuario_id: int) -> bool:
+def deletar_usuario(cpf: int) -> bool:
     with get_session() as session:
-        usuario = session.get(Usuario, usuario_id)
+        usuario = session.get(Usuario, cpf)
         if not usuario:
             return False
         usuario.ativo = False
@@ -174,9 +249,8 @@ def deletar_usuario(usuario_id: int) -> bool:
 
 # ==================== EVENTOS ====================
 
-def criar_evento(usuario_id: int, data_inicio: str, data_fim: str, 
-                tipo_ausencia: TipoAusencia, turno: Optional[Turno] = None,
-                descricao: Optional[str] = None) -> Evento:
+def criar_evento(cpf_usuario: int, data_inicio: str, data_fim: str, 
+                id_tipo_ausencia: int, uf: str, aprovado_por: int) -> Evento:
     with get_session() as session:
         # Converte strings para date
         inicio_date = datetime.strptime(data_inicio, "%Y-%m-%d").date()
@@ -185,27 +259,27 @@ def criar_evento(usuario_id: int, data_inicio: str, data_fim: str,
         total_dias = (fim_date - inicio_date).days + 1
         
         evento = Evento(
-            usuario_id=usuario_id,
+            cpf_usuario=cpf_usuario,
             data_inicio=inicio_date,
             data_fim=fim_date,
             total_dias=total_dias,
-            tipo_ausencia=tipo_ausencia,
-            turno=turno,
-            descricao=descricao
+            id_tipo_ausencia=id_tipo_ausencia,
+            UF=uf,
+            aprovado_por=aprovado_por
         )
         session.add(evento)
         session.commit()
         session.refresh(evento)
         return evento
 
-def listar_eventos(usuario_id: Optional[int] = None, grupo_id: Optional[int] = None,
-                  status: Optional[StatusEvento] = None) -> List[Evento]:
+def listar_eventos(cpf_usuario: Optional[int] = None, grupo_id: Optional[int] = None,
+                  status: Optional[str] = None) -> List[Evento]:
     with get_session() as session:
-        query = select(Evento).join(Usuario, Evento.usuario_id == Usuario.id)
+        query = select(Evento).join(Usuario, Evento.cpf_usuario == Usuario.cpf)
         
         conditions = []
-        if usuario_id:
-            conditions.append(Evento.usuario_id == usuario_id)
+        if cpf_usuario:
+            conditions.append(Evento.cpf_usuario == cpf_usuario)
         if grupo_id:
             conditions.append(Usuario.grupo_id == grupo_id)
         if status:
@@ -248,122 +322,71 @@ def deletar_evento(evento_id: int) -> bool:
         session.commit()
         return True
 
-def aprovar_evento(evento_id: int, aprovador_id: int, observacoes: Optional[str] = None) -> bool:
+def aprovar_evento(evento_id: int, aprovador_cpf: int) -> bool:
     with get_session() as session:
         evento = session.get(Evento, evento_id)
         if not evento:
             return False
         
-        evento.status = StatusEvento.APROVADO
-        evento.aprovado_por_id = aprovador_id
-        evento.data_aprovacao = datetime.utcnow()
-        evento.observacoes_aprovacao = observacoes
+        evento.status = "aprovado"
+        evento.aprovado_por = aprovador_cpf
         
         session.commit()
         return True
 
-def rejeitar_evento(evento_id: int, aprovador_id: int, observacoes: Optional[str] = None) -> bool:
+def rejeitar_evento(evento_id: int, aprovador_cpf: int) -> bool:
     with get_session() as session:
         evento = session.get(Evento, evento_id)
         if not evento:
             return False
         
-        evento.status = StatusEvento.REJEITADO
-        evento.aprovado_por_id = aprovador_id
-        evento.data_aprovacao = datetime.utcnow()
-        evento.observacoes_aprovacao = observacoes
+        evento.status = "rejeitado"
+        evento.aprovado_por = aprovador_cpf
         
         session.commit()
         return True
 
-# ==================== UTILITÁRIOS ====================
+# ==================== FERIADOS ====================
 
-def eventos_para_calendario(grupo_id: Optional[int] = None, apenas_aprovados: bool = True) -> List[Dict]:
-    """Retorna eventos formatados para calendário"""
+def criar_feriado_nacional(data_feriado: str, uf: str, descricao_feriado: str) -> FeriadoNacional:
     with get_session() as session:
-        # Join explícito especificando a condição
-        query = select(Evento, Usuario).join(Usuario, Evento.usuario_id == Usuario.id)
-        
-        conditions = []
-        if grupo_id:
-            conditions.append(Usuario.grupo_id == grupo_id)
-        if apenas_aprovados:
-            conditions.append(Evento.status == StatusEvento.APROVADO)
-        
-        if conditions:
-            query = query.where(and_(*conditions))
-        
-        results = session.execute(query).all()
-        
-        calendario = []
-        for evento, usuario in results:
-            calendario.append({
-                "id": evento.id,
-                "title": f"{evento.tipo_ausencia.value} - {usuario.nome}",
-                "start": evento.data_inicio.isoformat(),
-                "end": (evento.data_fim + timedelta(days=1)).isoformat(),
-                "color": evento.TIPO_AUSENCIA_CORES.get(evento.tipo_ausencia, "grey"),
-                "extendedProps": {
-                    "description": evento.descricao,
-                    "shift": evento.turno.value if evento.turno else None,
-                    "status": evento.status.value,
-                    "usuario_id": evento.usuario_id,
-                    "usuario_nome": usuario.nome,
-                    "total_dias": evento.total_dias
-                }
-            })
-        
-        return calendario
+        data = datetime.strptime(data_feriado, "%Y-%m-%d").date()
+        feriado = FeriadoNacional(
+            data_feriado=data,
+            uf=uf,
+            descricao_feriado=descricao_feriado
+        )
+        session.add(feriado)
+        session.commit()
+        session.refresh(feriado)
+        return feriado
 
-def estatisticas_grupo(grupo_id: int) -> Dict[str, Any]:
-    """Retorna estatísticas de um grupo"""
+def criar_feriado_estadual(data_feriado: str, uf: str, descricao_feriado: str) -> FeriadoEstadual:
     with get_session() as session:
-        grupo = session.get(Grupo, grupo_id)
-        if not grupo:
-            return {}
-        
-        # Conta usuários do grupo
-        total_usuarios = session.execute(
-            select(func.count(Usuario.id)).where(Usuario.grupo_id == grupo_id)
-        ).scalar()
-        
-        usuarios_ativos = session.execute(
-            select(func.count(Usuario.id)).where(
-                and_(Usuario.grupo_id == grupo_id, Usuario.ativo)
-            )
-        ).scalar()
-        
-        # Conta eventos pendentes - join explícito
-        eventos_pendentes = session.execute(
-            select(func.count(Evento.id))
-            .join(Usuario, Evento.usuario_id == Usuario.id)
-            .where(
-                and_(
-                    Usuario.grupo_id == grupo_id,
-                    Evento.status == StatusEvento.PENDENTE
-                )
-            )
-        ).scalar()
-        
-        # Conta eventos aprovados - join explícito
-        eventos_aprovados = session.execute(
-            select(func.count(Evento.id))
-            .join(Usuario, Evento.usuario_id == Usuario.id)
-            .where(
-                and_(
-                    Usuario.grupo_id == grupo_id,
-                    Evento.status == StatusEvento.APROVADO
-                )
-            )
-        ).scalar()
-        
-        return {
-            "grupo": grupo.nome,
-            "total_usuarios": total_usuarios,
-            "eventos_pendentes": eventos_pendentes,
-            "eventos_aprovados": eventos_aprovados,
-            "usuarios_ativos": usuarios_ativos
-        }
+        data = datetime.strptime(data_feriado, "%Y-%m-%d").date()
+        feriado = FeriadoEstadual(
+            data_feriado=data,
+            uf=uf,
+            descricao_feriado=descricao_feriado
+        )
+        session.add(feriado)
+        session.commit()
+        session.refresh(feriado)
+        return feriado
+
+def listar_feriados_nacionais(uf: Optional[str] = None) -> List[FeriadoNacional]:
+    with get_session() as session:
+        query = select(FeriadoNacional)
+        if uf:
+            query = query.where(FeriadoNacional.uf == uf)
+        return list(session.execute(query).scalars().all())
+
+def listar_feriados_estaduais(uf: Optional[str] = None) -> List[FeriadoEstadual]:
+    with get_session() as session:
+        query = select(FeriadoEstadual)
+        if uf:
+            query = query.where(FeriadoEstadual.uf == uf)
+        return list(session.execute(query).scalars().all())
 
 # ==================== CONVERSORES ====================
 
@@ -371,13 +394,13 @@ def empresa_para_dict(empresa: Empresa) -> Dict[str, Any]:
     with get_session() as session:
         # Conta grupos da empresa
         total_grupos = session.execute(
-            select(func.count(Grupo.id)).where(Grupo.empresa_id == empresa.id)
+            select(func.count(Grupo.id)).where(Grupo.cnpj_empresa == empresa.cnpj)
         ).scalar()
         
         return {
+            "cnpj": empresa.cnpj,
             "id": empresa.id,
             "nome": empresa.nome,
-            "cnpj": empresa.cnpj,
             "endereco": empresa.endereco,
             "telefone": empresa.telefone,
             "email": empresa.email,
@@ -389,20 +412,21 @@ def empresa_para_dict(empresa: Empresa) -> Dict[str, Any]:
 def grupo_para_dict(grupo: Grupo) -> Dict[str, Any]:
     with get_session() as session:
         # Busca nome da empresa
-        empresa = session.get(Empresa, grupo.empresa_id)
+        empresa = session.get(Empresa, grupo.cnpj_empresa)
         empresa_nome = empresa.nome if empresa else "N/A"
         
         # Conta usuários do grupo
         total_usuarios = session.execute(
-            select(func.count(Usuario.id)).where(Usuario.grupo_id == grupo.id)
+            select(func.count(Usuario.cpf)).where(Usuario.grupo_id == grupo.id)
         ).scalar()
         
         return {
             "id": grupo.id,
             "nome": grupo.nome,
             "descricao": grupo.descricao,
-            "empresa_id": grupo.empresa_id,
+            "cnpj_empresa": grupo.cnpj_empresa,
             "empresa_nome": empresa_nome,
+            "telefone": grupo.telefone,
             "ativo": grupo.ativo,
             "criado_em": grupo.criado_em.isoformat(),
             "total_usuarios": total_usuarios
@@ -416,59 +440,46 @@ def usuario_para_dict(usuario: Usuario) -> Dict[str, Any]:
             grupo = session.get(Grupo, usuario.grupo_id)
             grupo_nome = grupo.nome if grupo else None
         
-        # Calcula férias tiradas no ano atual
-        ano_atual = datetime.now().year
-        ferias_tiradas = session.execute(
-            select(func.sum(Evento.total_dias))
-            .where(
-                and_(
-                    Evento.usuario_id == usuario.id,
-                    Evento.tipo_ausencia == TipoAusencia.FERIAS,
-                    Evento.status == StatusEvento.APROVADO,
-                    func.strftime('%Y', Evento.data_inicio) == str(ano_atual)
-                )
-            )
-        ).scalar() or 0
-        
         return {
-            "id": usuario.id,
+            "cpf": usuario.cpf,
             "nome": usuario.nome,
             "email": usuario.email,
-            "tipo_usuario": usuario.tipo_usuario.value,
+            "tipo_usuario": usuario.tipo_usuario,
             "grupo_id": usuario.grupo_id,
             "grupo_nome": grupo_nome,
             "inicio_na_empresa": usuario.inicio_na_empresa.isoformat(),
             "ativo": usuario.ativo,
             "criado_em": usuario.criado_em.isoformat(),
-            "ferias_tiradas": ferias_tiradas
+            "UF": usuario.UF,
+            "flag_gestor": usuario.flag_gestor
         }
 
 def evento_para_dict(evento: Evento) -> Dict[str, Any]:
     with get_session() as session:
         # Busca nome do usuário
-        usuario = session.get(Usuario, evento.usuario_id)
+        usuario = session.get(Usuario, evento.cpf_usuario)
         usuario_nome = usuario.nome if usuario else "N/A"
         
-        # Busca nome do aprovador se existir
-        aprovado_por_nome = None
-        if evento.aprovado_por_id:
-            aprovador = session.get(Usuario, evento.aprovado_por_id)
-            aprovado_por_nome = aprovador.nome if aprovador else None
+        # Busca nome do aprovador
+        aprovador = session.get(Usuario, evento.aprovado_por)
+        aprovado_por_nome = aprovador.nome if aprovador else "N/A"
+        
+        # Busca tipo de ausência
+        tipo_ausencia = session.get(TipoAusencia, evento.id_tipo_ausencia)
+        tipo_ausencia_desc = tipo_ausencia.descricao_ausencia if tipo_ausencia else "N/A"
         
         return {
             "id": evento.id,
-            "usuario_id": evento.usuario_id,
+            "cpf_usuario": evento.cpf_usuario,
             "usuario_nome": usuario_nome,
             "data_inicio": evento.data_inicio.isoformat(),
             "data_fim": evento.data_fim.isoformat(),
             "total_dias": evento.total_dias,
-            "tipo_ausencia": evento.tipo_ausencia.value,
-            "turno": evento.turno.value if evento.turno else None,
-            "descricao": evento.descricao,
-            "status": evento.status.value,
-            "aprovado_por_id": evento.aprovado_por_id,
+            "id_tipo_ausencia": evento.id_tipo_ausencia,
+            "tipo_ausencia_desc": tipo_ausencia_desc,
+            "status": evento.status,
+            "aprovado_por": evento.aprovado_por,
             "aprovado_por_nome": aprovado_por_nome,
-            "data_aprovacao": evento.data_aprovacao.isoformat() if evento.data_aprovacao else None,
-            "observacoes_aprovacao": evento.observacoes_aprovacao,
-            "criado_em": evento.criado_em.isoformat()
+            "criado_em": evento.criado_em.isoformat(),
+            "UF": evento.UF
         }

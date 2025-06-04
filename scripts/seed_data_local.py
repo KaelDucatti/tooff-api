@@ -1,16 +1,15 @@
 """
-Script para popular o banco de dados MySQL com dados de exemplo - Nova estrutura
+Script para popular o banco SQLite local com dados de exemplo
 """
 import sys
 from pathlib import Path
-import os
 from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
 
 from api.database.models import init_db
 from api.database.crud import (
     criar_uf, criar_empresa, criar_grupo, criar_usuario, criar_evento,
-    criar_tipo_ausencia, criar_turno, criar_feriado_nacional, criar_feriado_estadual
+    criar_tipo_ausencia, criar_turno, criar_feriado_nacional
 )
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -20,36 +19,21 @@ sys.path.append(str(Path(__file__).parent.parent))
 
 
 def seed_database():
-    """Popula o banco MySQL com dados de exemplo - Nova estrutura"""
+    """Popula o banco SQLite local com dados de exemplo"""
     
-    # Configuração do banco MySQL
-    db_host = os.getenv('DB_HOST')
-    db_port = os.getenv('DB_PORT', '3306')
-    db_name = os.getenv('DB_NAME')
-    db_user = os.getenv('DB_USER')
-    db_pass = os.getenv('DB_PASS')
+    print("🚀 Conectando ao SQLite local...")
     
-    database_url = f"mysql+pymysql://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
+    # Inicializa o banco SQLite
+    init_db("sqlite:///database/tooff_app.db")
     
-    print("🚀 Conectando ao MySQL na GCP...")
-    print(f"📊 Host: {db_host}")
-    print(f"🗄️  Database: {db_name}")
-    
-    # Inicializa o banco
-    init_db(database_url)
-    
-    print("Criando dados de exemplo com nova estrutura...")
+    print("Criando dados de exemplo no SQLite...")
     
     try:
         # 1. Criar UFs
         print("📍 Criando UFs...")
         ufs = [
             (11, "SP"), (21, "RJ"), (31, "MG"), (41, "PR"), (42, "SC"),
-            (43, "RS"), (51, "MT"), (52, "GO"), (53, "DF"), (61, "AC"),
-            (62, "AL"), (63, "AP"), (64, "AM"), (65, "BA"), (66, "CE"),
-            (67, "ES"), (68, "MA"), (69, "PA"), (70, "PB"), (71, "PE"),
-            (72, "PI"), (73, "RN"), (74, "RO"), (75, "RR"), (76, "SE"),
-            (77, "TO")
+            (43, "RS"), (51, "MT"), (52, "GO"), (53, "DF")
         ]
         
         for cod_uf, uf in ufs:
@@ -80,11 +64,9 @@ def seed_database():
         # 3. Criar turnos
         print("⏰ Criando turnos...")
         turnos = ["Dia", "Noite", "Madrugada"]
-        turnos_criados = []
         for turno_desc in turnos:
             try:
-                turno = criar_turno(turno_desc)
-                turnos_criados.append(turno)
+                criar_turno(turno_desc)
             except IntegrityError:
                 pass  # Turno já existe
         
@@ -116,14 +98,7 @@ def seed_database():
             descricao="Equipe de desenvolvimento de software"
         )
         
-        grupo_marketing = criar_grupo(
-            nome="Marketing",
-            cnpj_empresa=empresa.cnpj,
-            telefone="(11) 1234-5681",
-            descricao="Equipe de marketing e vendas"
-        )
-        
-        print(f"✅ Grupos criados: {grupo_rh.nome}, {grupo_dev.nome}, {grupo_marketing.nome}")
+        print(f"✅ Grupos criados: {grupo_rh.nome}, {grupo_dev.nome}")
         
         # 6. Criar usuários
         print("👤 Criando usuários...")
@@ -163,91 +138,43 @@ def seed_database():
             flag_gestor="N"
         )
         
-        dev2 = criar_usuario(
-            cpf=45678901234,
-            nome="Carlos Oliveira",
-            email="carlos.dev@techsolutions.com",
-            senha="123456",
-            grupo_id=grupo_dev.id,
-            inicio_na_empresa="2023-01-20",
-            uf="SP",
-            tipo_usuario="comum",
-            flag_gestor="N"
-        )
-        
-        marketing1 = criar_usuario(
-            cpf=56789012345,
-            nome="Lucia Ferreira",
-            email="lucia.marketing@techsolutions.com",
-            senha="123456",
-            grupo_id=grupo_marketing.id,
-            inicio_na_empresa="2022-09-15",
-            uf="SP",
-            tipo_usuario="comum",
-            flag_gestor="N"
-        )
-        
         print("✅ Usuários criados:")
         print(f"- RH: {usuario_rh.nome} (CPF {usuario_rh.cpf})")
         print(f"- Gestor: {gestor_dev.nome} (CPF {gestor_dev.cpf})")
-        print(f"- Devs: {dev1.nome} (CPF {dev1.cpf}), {dev2.nome} (CPF {dev2.cpf})")
-        print(f"- Marketing: {marketing1.nome} (CPF {marketing1.cpf})")
+        print(f"- Dev: {dev1.nome} (CPF {dev1.cpf})")
         
         # 7. Criar eventos de exemplo
         print("📅 Criando eventos...")
         if tipos_criados:
-            eventos = []
-            eventos.append(criar_evento(
+            evento = criar_evento(
                 cpf_usuario=dev1.cpf,
-                data_inicio="2024-02-15",
-                data_fim="2024-02-19",
+                data_inicio="2024-12-15",
+                data_fim="2024-12-19",
                 id_tipo_ausencia=tipos_criados[0].id_tipo_ausencia,  # Férias
                 uf="SP",
                 aprovado_por=gestor_dev.cpf
-            ))
-            eventos.append(criar_evento(
-                cpf_usuario=dev2.cpf,
-                data_inicio="2024-03-01",
-                data_fim="2024-03-01",
-                id_tipo_ausencia=tipos_criados[1].id_tipo_ausencia,  # Assiduidade
-                uf="SP",
-                aprovado_por=gestor_dev.cpf
-            ))
-            
-            print("✅ Eventos criados:")
-            for ev in eventos:
-                print(f"- ID {ev.id}: Tipo {ev.id_tipo_ausencia} de {ev.cpf_usuario} de {ev.data_inicio} a {ev.data_fim}")
+            )
+            print(f"✅ Evento criado: ID {evento.id}")
         
         # 8. Criar alguns feriados
         print("🎉 Criando feriados...")
         try:
             criar_feriado_nacional("2024-01-01", "SP", "Confraternização Universal")
             criar_feriado_nacional("2024-04-21", "SP", "Tiradentes")
-            criar_feriado_nacional("2024-09-07", "SP", "Independência do Brasil")
-            criar_feriado_estadual("2024-01-25", "SP", "Aniversário de São Paulo")
         except IntegrityError:
             pass  # Feriados já existem
         
-        print("\n🎉 Dados de exemplo criados com sucesso no MySQL!")
-        print("📊 Nova estrutura implementada com:")
-        print("- UFs brasileiras")
-        print("- Tipos de ausência configuráveis")
-        print("- Sistema de turnos")
-        print("- Feriados nacionais e estaduais")
-        print("- CPF como chave primária para usuários")
-        print("- CNPJ como chave primária para empresas")
+        print("\n🎉 Dados de exemplo criados com sucesso no SQLite!")
+        print("📊 Banco local pronto para desenvolvimento!")
 
         print("\n=== CREDENCIAIS DE TESTE ===")
-        print(f"RH: {usuario_rh.email} / 123456 (CPF {usuario_rh.cpf})")
-        print(f"Gestor: {gestor_dev.email} / 123456 (CPF {gestor_dev.cpf})")
-        print(f"Dev1: {dev1.email} / 123456 (CPF {dev1.cpf})")
-        print(f"Dev2: {dev2.email} / 123456 (CPF {dev2.cpf})")
-        print(f"Marketing: {marketing1.email} / 123456 (CPF {marketing1.cpf})")
+        print(f"RH: {usuario_rh.email} / 123456")
+        print(f"Gestor: {gestor_dev.email} / 123456")
+        print(f"Dev: {dev1.email} / 123456")
         
     except IntegrityError as ie:
         print(f"❌ Erro de integridade dos dados: {ie}")
         print("💡 Alguns dados podem já existir no banco.")
-        raise
     except Exception as e:
         print(f"❌ Erro ao criar dados: {e}")
         raise

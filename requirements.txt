@@ -4,3 +4,5 @@ SQLAlchemy==2.0.35
 Werkzeug==3.0.4
 python-dotenv==1.0.1
 PyJWT==2.8.0
+PyMySQL==1.1.0
+cryptography==42.0.8
