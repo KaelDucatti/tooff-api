@@ -12,6 +12,7 @@ from api.routes.tipos_ausencia import tipos_ausencia_bp
 from api.routes.turnos import turnos_bp
 from api.routes.ufs import ufs_bp
 from api.routes.feriados import feriados_bp
+from api.routes.validation import validation_bp
 from api.database.models import init_db
 
 # Carrega variáveis de ambiente
@@ -53,7 +54,8 @@ def create_app():
         return jsonify({
             "status": "API Flask funcionando!",
             "database": "MySQL" if database_url and database_url.startswith("mysql") else "SQLite",
-            "version": "2.0"
+            "version": "2.0",
+            "features": ["CPF/CNPJ Validation", "Integrity Checking"]
         })
     
     # Registra blueprints
@@ -66,6 +68,7 @@ def create_app():
     app.register_blueprint(turnos_bp, url_prefix='/api/turnos')
     app.register_blueprint(ufs_bp, url_prefix='/api/ufs')
     app.register_blueprint(feriados_bp, url_prefix='/api/feriados')
+    app.register_blueprint(validation_bp, url_prefix='/api/validation')
     
     return app
 
@@ -79,6 +82,7 @@ if __name__ == '__main__':
         print(f"🗄️  Database: {os.getenv('DB_NAME')}")
     
     print("🔄 Nova estrutura de schema implementada!")
+    print("🔍 Sistema de validação CPF/CNPJ ativo!")
     print("🌐 Servidor iniciando na porta 5000...")
     
     app.run(debug=True, port=5000)
