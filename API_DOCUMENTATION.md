@@ -5,9 +5,9 @@
 API Flask para gestão hierárquica de eventos corporativos com sistema de aprovação baseado em níveis de usuário. **Versão 2.0** com nova estrutura de banco de dados utilizando CPF e CNPJ como chaves primárias.
 
 ### 🎯 Modelo Hierárquico
-\`\`\`
+```
 Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
-\`\`\`
+```
 
 ### 👥 Tipos de Usuário
 - **RH**: Acesso total ao sistema
@@ -65,7 +65,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 - **Status**: 200 (sucesso), 401 (credenciais inválidas)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "autenticado": true,
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
@@ -82,7 +82,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
     ...
   }
 }
-\`\`\`
+```
 
 ### Demais endpoints de autenticação
 - `POST /api/auth/refresh` - Renovar token
@@ -109,7 +109,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 **Campos obrigatórios**: `cnpj`, `id`, `nome`, `endereco`, `telefone`, `email`
 **Validações**: CNPJ único, email único
 **Exemplo**:
-\`\`\`json
+```json
 {
   "cnpj": 12345678000190,
   "id": 1,
@@ -118,7 +118,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
   "telefone": "(11) 1234-5678",
   "email": "contato@techsolutions.com"
 }
-\`\`\`
+```
 
 ### `PUT /api/empresas/{cnpj}` e `DELETE /api/empresas/{cnpj}`
 **Funcionalidade**: Atualizar e desativar empresa
@@ -138,14 +138,14 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 **Campos obrigatórios**: `nome`, `cnpj_empresa`, `telefone`
 **Campos opcionais**: `descricao`
 **Exemplo**:
-\`\`\`json
+```json
 {
   "nome": "Desenvolvimento",
   "cnpj_empresa": 12345678000190,
   "telefone": "(11) 1234-5680",
   "descricao": "Equipe de desenvolvimento"
 }
-\`\`\`
+```
 
 ---
 
@@ -168,7 +168,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 **Campos obrigatórios**: `cpf`, `nome`, `email`, `senha`, `grupo_id`, `inicio_na_empresa`, `uf`
 **Campos opcionais**: `tipo_usuario`, `flag_gestor`
 **Exemplo**:
-\`\`\`json
+```json
 {
   "cpf": 12345678901,
   "nome": "Maria Silva",
@@ -180,7 +180,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
   "tipo_usuario": "rh",
   "flag_gestor": "N"
 }
-\`\`\`
+```
 
 ### `PUT /api/usuarios/{cpf}` e `DELETE /api/usuarios/{cpf}`
 **Funcionalidade**: Atualizar e desativar usuário
@@ -201,7 +201,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 **Funcionalidade**: Criar novo evento
 **Campos obrigatórios**: `cpf_usuario`, `data_inicio`, `data_fim`, `id_tipo_ausencia`, `uf`, `aprovado_por`
 **Exemplo**:
-\`\`\`json
+```json
 {
   "cpf_usuario": 12345678901,
   "data_inicio": "2024-12-15",
@@ -210,7 +210,7 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
   "uf": "SP",
   "aprovado_por": 23456789012
 }
-\`\`\`
+```
 
 ### `POST /api/eventos/{id}/aprovar` e `POST /api/eventos/{id}/rejeitar`
 **Funcionalidade**: Aprovar/rejeitar evento
@@ -248,12 +248,12 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 **Funcionalidade**: Criar novo tipo (RH apenas)
 **Campos**: `descricao_ausencia`, `usa_turno`
 **Exemplo**:
-\`\`\`json
+```json
 {
   "descricao_ausencia": "Licença Médica",
   "usa_turno": false
 }
-\`\`\`
+```
 
 ---
 
@@ -286,13 +286,13 @@ Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
 **Funcionalidade**: Criar feriados (RH apenas)
 **Campos**: `data_feriado`, `uf`, `descricao_feriado`
 **Exemplo**:
-\`\`\`json
+```json
 {
   "data_feriado": "2024-01-01",
   "uf": "SP",
   "descricao_feriado": "Confraternização Universal"
 }
-\`\`\`
+```
 
 ---
 
