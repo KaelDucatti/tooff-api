@@ -119,13 +119,15 @@ class Usuario(Base):
     nome: Mapped[str] = mapped_column(String(100), nullable=False)
     email: Mapped[str] = mapped_column(String(100), nullable=False)
     senha_hash: Mapped[str] = mapped_column(String(515), nullable=False, unique=True)
-    tipo_usuario: Mapped[str] = mapped_column(String(10), nullable=False, default="")
+    # Usando String em vez de Enum para compatibilidade com schema existente
+    tipo_usuario: Mapped[str] = mapped_column(String(10), nullable=False, default="comum")
     grupo_id: Mapped[int] = mapped_column(Integer, ForeignKey("grupo.id"), nullable=False)
     inicio_na_empresa: Mapped[date] = mapped_column(Date, nullable=False)
     ativo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     UF: Mapped[str] = mapped_column(CHAR(2), ForeignKey("uf.uf"), nullable=False)
-    flag_gestor: Mapped[str] = mapped_column(CHAR(1), nullable=False)
+    # Usando CHAR(1) para compatibilidade com schema existente
+    flag_gestor: Mapped[str] = mapped_column(CHAR(1), nullable=False, default="N")
     
     # Relacionamentos
     grupo: Mapped["Grupo"] = relationship("Grupo", back_populates="usuarios")
@@ -153,17 +155,17 @@ class Usuario(Base):
     
     def pode_gerenciar_grupo(self, grupo_id: int) -> bool:
         """Verifica se o usuário pode gerenciar um grupo específico"""
-        if self.tipo_usuario == "rh":
+        if self.tipo_usuario == TipoUsuario.RH.value:
             return True
-        if self.flag_gestor == "S":
+        if self.flag_gestor == FlagGestor.SIM.value:
             return self.grupo_id == grupo_id
         return False
     
     def pode_aprovar_eventos(self, grupo_id: int) -> bool:
         """Verifica se o usuário pode aprovar eventos de um grupo"""
-        if self.tipo_usuario == "rh":
+        if self.tipo_usuario == TipoUsuario.RH.value:
             return True
-        if self.flag_gestor == "S":
+        if self.flag_gestor == FlagGestor.SIM.value:
             return self.grupo_id == grupo_id
         return False
 
@@ -176,6 +178,7 @@ class Evento(Base):
     data_fim: Mapped[date] = mapped_column(Date, nullable=False)
     total_dias: Mapped[int] = mapped_column(Integer, nullable=False)
     id_tipo_ausencia: Mapped[int] = mapped_column(Integer, ForeignKey("tipo_ausencia.id_tipo_ausencia"), nullable=False)
+    # Usando String em vez de Enum para compatibilidade com schema existente
     status: Mapped[str] = mapped_column(String(15), nullable=False, default="pendente")
     criado_em: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.utcnow)
     UF: Mapped[str] = mapped_column(CHAR(2), ForeignKey("uf.uf"), nullable=False)

@@ -5,17 +5,18 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
-
-from api.database.models import init_db
+from api.database.models import init_db, TipoUsuario, FlagGestor
 from api.database.crud import (
     criar_uf, criar_empresa, criar_grupo, criar_usuario, criar_evento,
     criar_tipo_ausencia, criar_turno, criar_feriado_nacional
 )
+
 # Carrega variáveis de ambiente
 load_dotenv()
 
 # Adiciona o diretório pai ao path para importar os módulos
-sys.path.append(str(Path(__file__).parent.parent))
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
 
 
 def seed_database():
@@ -23,12 +24,12 @@ def seed_database():
     
     print("🚀 Conectando ao SQLite local...")
     
-    # Inicializa o banco SQLite
-    init_db("sqlite:///database/tooff_app.db")
-    
-    print("Criando dados de exemplo no SQLite...")
-    
     try:
+        # Inicializa o banco SQLite
+        init_db("sqlite:///database/tooff_app.db")
+        
+        print("Criando dados de exemplo no SQLite...")
+        
         # 1. Criar UFs
         print("📍 Criando UFs...")
         ufs = [
@@ -110,8 +111,8 @@ def seed_database():
             grupo_id=grupo_rh.id,
             inicio_na_empresa="2020-01-15",
             uf="SP",
-            tipo_usuario="rh",
-            flag_gestor="N"
+            tipo_usuario=TipoUsuario.RH.value,
+            flag_gestor=FlagGestor.NAO.value
         )
         
         gestor_dev = criar_usuario(
@@ -122,8 +123,8 @@ def seed_database():
             grupo_id=grupo_dev.id,
             inicio_na_empresa="2021-03-10",
             uf="SP",
-            tipo_usuario="gestor",
-            flag_gestor="S"
+            tipo_usuario=TipoUsuario.GESTOR.value,
+            flag_gestor=FlagGestor.SIM.value
         )
         
         dev1 = criar_usuario(
@@ -134,8 +135,8 @@ def seed_database():
             grupo_id=grupo_dev.id,
             inicio_na_empresa="2022-06-01",
             uf="SP",
-            tipo_usuario="comum",
-            flag_gestor="N"
+            tipo_usuario=TipoUsuario.COMUM.value,
+            flag_gestor=FlagGestor.NAO.value
         )
         
         print("✅ Usuários criados:")
@@ -166,6 +167,7 @@ def seed_database():
         
         print("\n🎉 Dados de exemplo criados com sucesso no SQLite!")
         print("📊 Banco local pronto para desenvolvimento!")
+        print("✅ Enums corretamente implementados")
 
         print("\n=== CREDENCIAIS DE TESTE ===")
         print(f"RH: {usuario_rh.email} / 123456")

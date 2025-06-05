@@ -1,10 +1,11 @@
 from typing import List, Optional, Dict, Any
-from datetime import datetime
-from sqlalchemy import select, and_, func
+from datetime import datetime, timedelta
+from sqlalchemy import select, and_, func, extract
 
 from .models import (
     get_session, Usuario, Empresa, Grupo, Evento, UF,
-    TipoAusencia, Turno, FeriadoNacional, FeriadoEstadual
+    TipoAusencia, Turno, FeriadoNacional, FeriadoEstadual,
+    TipoUsuario, StatusEvento, FlagGestor
 )
 
 # ==================== UF ====================
@@ -165,10 +166,26 @@ def obter_turno(turno_id: int) -> Optional[Turno]:
 
 def criar_usuario(cpf: int, nome: str, email: str, senha: str, 
                  grupo_id: int, inicio_na_empresa: str, uf: str,
-                 tipo_usuario: str = "comum", flag_gestor: str = "N", **kwargs) -> Usuario:
+                 tipo_usuario: str = TipoUsuario.COMUM.value, 
+                 flag_gestor: str = FlagGestor.NAO.value, **kwargs) -> Usuario:
     with get_session() as session:
         # Converte string para date se necessário
         data_inicio = datetime.strptime(inicio_na_empresa, "%Y-%m-%d").date()
+        
+        # Garante que os valores são strings válidas dos enums
+        if isinstance(tipo_usuario, TipoUsuario):
+            tipo_usuario = tipo_usuario.value
+        if isinstance(flag_gestor, FlagGestor):
+            flag_gestor = flag_gestor.value
+            
+        # Valida valores dos enums
+        valid_tipos = [e.value for e in TipoUsuario]
+        valid_flags = [e.value for e in FlagGestor]
+        
+        if tipo_usuario not in valid_tipos:
+            raise ValueError(f"tipo_usuario deve ser um de: {valid_tipos}")
+        if flag_gestor not in valid_flags:
+            raise ValueError(f"flag_gestor deve ser um de: {valid_flags}")
         
         usuario = Usuario(
             cpf=cpf,
@@ -208,6 +225,9 @@ def listar_usuarios(grupo_id: Optional[int] = None, tipo_usuario: Optional[str] 
         if grupo_id:
             conditions.append(Usuario.grupo_id == grupo_id)
         if tipo_usuario:
+            # Converte enum para string se necessário
+            if isinstance(tipo_usuario, TipoUsuario):
+                tipo_usuario = tipo_usuario.value
             conditions.append(Usuario.tipo_usuario == tipo_usuario)
         if ativos_apenas:
             conditions.append(Usuario.ativo)
@@ -232,6 +252,14 @@ def atualizar_usuario(cpf: int, **kwargs) -> bool:
                 usuario.set_senha(value)
             elif key == "inicio_na_empresa" and isinstance(value, str):
                 setattr(usuario, key, datetime.strptime(value, "%Y-%m-%d").date())
+            elif key == "tipo_usuario":
+                if isinstance(value, TipoUsuario):
+                    value = value.value
+                setattr(usuario, key, value)
+            elif key == "flag_gestor":
+                if isinstance(value, FlagGestor):
+                    value = value.value
+                setattr(usuario, key, value)
             else:
                 setattr(usuario, key, value)
         
@@ -265,7 +293,8 @@ def criar_evento(cpf_usuario: int, data_inicio: str, data_fim: str,
             total_dias=total_dias,
             id_tipo_ausencia=id_tipo_ausencia,
             UF=uf,
-            aprovado_por=aprovado_por
+            aprovado_por=aprovado_por,
+            status=StatusEvento.PENDENTE.value  # Usa string do enum
         )
         session.add(evento)
         session.commit()
@@ -283,6 +312,9 @@ def listar_eventos(cpf_usuario: Optional[int] = None, grupo_id: Optional[int] = 
         if grupo_id:
             conditions.append(Usuario.grupo_id == grupo_id)
         if status:
+            # Converte enum para string se necessário
+            if isinstance(status, StatusEvento):
+                status = status.value
             conditions.append(Evento.status == status)
         
         if conditions:
@@ -303,6 +335,10 @@ def atualizar_evento(evento_id: int, **kwargs) -> bool:
         for key, value in kwargs.items():
             if key in ["data_inicio", "data_fim"] and isinstance(value, str):
                 setattr(evento, key, datetime.strptime(value, "%Y-%m-%d").date())
+            elif key == "status":
+                if isinstance(value, StatusEvento):
+                    value = value.value
+                setattr(evento, key, value)
             else:
                 setattr(evento, key, value)
         
@@ -328,7 +364,7 @@ def aprovar_evento(evento_id: int, aprovador_cpf: int) -> bool:
         if not evento:
             return False
         
-        evento.status = "aprovado"
+        evento.status = StatusEvento.APROVADO.value  # Usa string do enum
         evento.aprovado_por = aprovador_cpf
         
         session.commit()
@@ -340,7 +376,7 @@ def rejeitar_evento(evento_id: int, aprovador_cpf: int) -> bool:
         if not evento:
             return False
         
-        evento.status = "rejeitado"
+        evento.status = StatusEvento.REJEITADO.value  # Usa string do enum
         evento.aprovado_por = aprovador_cpf
         
         session.commit()
@@ -387,6 +423,70 @@ def listar_feriados_estaduais(uf: Optional[str] = None) -> List[FeriadoEstadual]
         if uf:
             query = query.where(FeriadoEstadual.uf == uf)
         return list(session.execute(query).scalars().all())
+
+# ==================== CALENDÁRIO ====================
+
+def eventos_para_calendario(grupo_id: Optional[int] = None, apenas_aprovados: bool = True) -> List[Dict[str, Any]]:
+    """Retorna eventos formatados para calendário (FullCalendar.js)"""
+    with get_session() as session:
+        query = select(Evento).join(Usuario, Evento.cpf_usuario == Usuario.cpf)
+        
+        conditions = []
+        if grupo_id:
+            conditions.append(Usuario.grupo_id == grupo_id)
+        if apenas_aprovados:
+            conditions.append(Evento.status == StatusEvento.APROVADO.value)
+        
+        if conditions:
+            query = query.where(and_(*conditions))
+        
+        eventos = session.execute(query).scalars().all()
+        
+        # Formatar para calendário
+        eventos_calendario = []
+        for evento in eventos:
+            # Buscar dados do usuário e tipo de ausência
+            usuario = session.get(Usuario, evento.cpf_usuario)
+            tipo_ausencia = session.get(TipoAusencia, evento.id_tipo_ausencia)
+            
+            # Cores por tipo de ausência
+            cores_tipo = {
+                "Férias": "#28a745",
+                "Licença Médica": "#dc3545", 
+                "Licença Maternidade": "#6f42c1",
+                "Licença Paternidade": "#20c997",
+                "Falta Justificada": "#fd7e14",
+                "Falta Injustificada": "#dc3545",
+                "Abono": "#17a2b8",
+                "Compensação": "#6c757d",
+                "Home Office": "#007bff",
+                "Treinamento": "#ffc107"
+            }
+            
+            tipo_desc = tipo_ausencia.descricao_ausencia if tipo_ausencia else "Ausência"
+            cor = cores_tipo.get(tipo_desc, "#6c757d")
+            
+            evento_calendario = {
+                "id": evento.id,
+                "title": f"{usuario.nome if usuario else 'N/A'} - {tipo_desc}",
+                "start": evento.data_inicio.isoformat(),
+                "end": (evento.data_fim + timedelta(days=1)).isoformat(),  # FullCalendar usa end exclusivo
+                "backgroundColor": cor,
+                "borderColor": cor,
+                "textColor": "#ffffff",
+                "extendedProps": {
+                    "cpf_usuario": evento.cpf_usuario,
+                    "usuario_nome": usuario.nome if usuario else "N/A",
+                    "tipo_ausencia": tipo_desc,
+                    "total_dias": evento.total_dias,
+                    "status": evento.status,
+                    "uf": evento.UF,
+                    "criado_em": evento.criado_em.isoformat()
+                }
+            }
+            eventos_calendario.append(evento_calendario)
+        
+        return eventos_calendario
 
 # ==================== CONVERSORES ====================
 
@@ -444,14 +544,14 @@ def usuario_para_dict(usuario: Usuario) -> Dict[str, Any]:
             "cpf": usuario.cpf,
             "nome": usuario.nome,
             "email": usuario.email,
-            "tipo_usuario": usuario.tipo_usuario,
+            "tipo_usuario": usuario.tipo_usuario,  # Já é string
             "grupo_id": usuario.grupo_id,
             "grupo_nome": grupo_nome,
             "inicio_na_empresa": usuario.inicio_na_empresa.isoformat(),
             "ativo": usuario.ativo,
             "criado_em": usuario.criado_em.isoformat(),
             "UF": usuario.UF,
-            "flag_gestor": usuario.flag_gestor
+            "flag_gestor": usuario.flag_gestor  # Já é string
         }
 
 def evento_para_dict(evento: Evento) -> Dict[str, Any]:
@@ -477,7 +577,7 @@ def evento_para_dict(evento: Evento) -> Dict[str, Any]:
             "total_dias": evento.total_dias,
             "id_tipo_ausencia": evento.id_tipo_ausencia,
             "tipo_ausencia_desc": tipo_ausencia_desc,
-            "status": evento.status,
+            "status": evento.status,  # Já é string
             "aprovado_por": evento.aprovado_por,
             "aprovado_por_nome": aprovado_por_nome,
             "criado_em": evento.criado_em.isoformat(),

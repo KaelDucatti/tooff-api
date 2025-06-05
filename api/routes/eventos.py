@@ -6,6 +6,7 @@ from ..database.crud import (
     atualizar_evento, deletar_evento, evento_para_dict,
     aprovar_evento, rejeitar_evento, obter_usuario
 )
+from ..database.models import TipoUsuario, FlagGestor, StatusEvento
 from ..middleware.auth import (
     jwt_required, requer_permissao_evento, filtrar_por_escopo_usuario,
     extrair_usuario_cpf_do_token, verificar_permissao_usuario_target
@@ -85,8 +86,8 @@ def criar():
         
         # Usuários comuns só podem criar eventos para si mesmos
         usuario_logado = obter_usuario(usuario_cpf)
-        if (usuario_logado and usuario_logado.tipo_usuario == 'comum' and 
-            usuario_logado.flag_gestor == 'N' and usuario_cpf != cpf_usuario):
+        if (usuario_logado and usuario_logado.tipo_usuario == TipoUsuario.COMUM and 
+            usuario_logado.flag_gestor == FlagGestor.NAO and usuario_cpf != cpf_usuario):
             return jsonify({"erro": "Usuários comuns só podem criar eventos próprios"}), 403
         
         # Para eventos criados por usuários comuns, o aprovador inicial é o próprio usuário
@@ -128,8 +129,8 @@ def atualizar(evento_id: int):
             return jsonify({"erro": "Evento ou usuário não encontrado"}), 404
         
         # Usuários comuns só podem editar próprios eventos pendentes
-        if (usuario_logado.tipo_usuario == 'comum' and usuario_logado.flag_gestor == 'N' and 
-            (evento.cpf_usuario != usuario_cpf or evento.status != 'pendente')):
+        if (usuario_logado.tipo_usuario == TipoUsuario.COMUM and usuario_logado.flag_gestor == FlagGestor.NAO and 
+            (evento.cpf_usuario != usuario_cpf or evento.status != StatusEvento.PENDENTE)):
             return jsonify({"erro": "Só é possível editar próprios eventos pendentes"}), 403
         
         sucesso = atualizar_evento(evento_id, **dados)
@@ -157,13 +158,13 @@ def deletar(evento_id: int):
             return jsonify({"erro": "Evento ou usuário não encontrado"}), 404
 
         # Usuário comum NÃO pode deletar evento de outro
-        if (usuario_logado.tipo_usuario == 'comum' and usuario_logado.flag_gestor == 'N' and 
+        if (usuario_logado.tipo_usuario == TipoUsuario.COMUM and usuario_logado.flag_gestor == FlagGestor.NAO and 
             evento.cpf_usuario != usuario_cpf):
             return jsonify({"erro": "Só é possível deletar próprios eventos pendentes"}), 403
 
         # Mesmo o próprio usuário comum só deleta se o evento estiver PENDENTE
-        if (usuario_logado.tipo_usuario == 'comum' and usuario_logado.flag_gestor == 'N' and 
-            evento.status != 'pendente'):
+        if (usuario_logado.tipo_usuario == TipoUsuario.COMUM and usuario_logado.flag_gestor == FlagGestor.NAO and 
+            evento.status != StatusEvento.PENDENTE):
             return jsonify({"erro": "Só é possível deletar próprios eventos pendentes"}), 403
 
         sucesso = deletar_evento(evento_id)
@@ -196,7 +197,7 @@ def aprovar(evento_id: int):
             return jsonify({"erro": "Evento não encontrado"}), 404
         
         # Verifica permissão para aprovar
-        if aprovador.tipo_usuario not in ['rh'] and aprovador.flag_gestor != 'S':
+        if aprovador.tipo_usuario not in [TipoUsuario.RH] and aprovador.flag_gestor != FlagGestor.SIM:
             return jsonify({"erro": "Sem permissão para aprovar eventos"}), 403
         
         # Verifica se o aprovador pode aprovar eventos deste usuário
@@ -234,7 +235,7 @@ def rejeitar(evento_id: int):
             return jsonify({"erro": "Evento não encontrado"}), 404
         
         # Verifica permissão para rejeitar
-        if aprovador.tipo_usuario not in ['rh'] and aprovador.flag_gestor != 'S':
+        if aprovador.tipo_usuario not in [TipoUsuario.RH] and aprovador.flag_gestor != FlagGestor.SIM:
             return jsonify({"erro": "Sem permissão para rejeitar eventos"}), 403
         
         # Verifica se o aprovador pode rejeitar eventos deste usuário

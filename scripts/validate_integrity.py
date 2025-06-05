@@ -9,11 +9,12 @@ from api.database.models import init_db
 from api.validation.integrity_checker import CPFCNPJIntegrityChecker
 from api.validation.report_generator import ReportGenerator
 
+# Adiciona o diretório pai ao path para importar os módulos
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 # Carrega variáveis de ambiente
 load_dotenv()
-
-# Adiciona o diretório pai ao path para importar os módulos
-sys.path.append(str(Path(__file__).parent.parent))
 
 
 def main():
@@ -36,34 +37,40 @@ def main():
     # Inicializa o banco de dados
     try:
         init_db(args.database)
+        print("✅ Conexão com banco estabelecida")
     except Exception as e:
         print(f"❌ Erro ao conectar com o banco: {e}")
         return 1
     
     # Executa as verificações
-    checker = CPFCNPJIntegrityChecker()
-    report = checker.run_all_checks()
-    
-    # Gera relatório no console
-    if not args.quiet:
-        console_report = ReportGenerator.generate_console_report(report)
-        print("\n" + console_report)
-    
-    # Salva relatório em arquivo se solicitado
-    if args.output:
-        filename = ReportGenerator.save_report_to_file(report, args.output)
-        print(f"\n💾 Relatório salvo em: {filename}")
-    
-    # Retorna código de saída baseado nos resultados
-    if report.errors:
-        print(f"\n❌ Validação concluída com {len(report.errors)} erro(s)")
+    try:
+        checker = CPFCNPJIntegrityChecker()
+        report = checker.run_all_checks()
+        
+        # Gera relatório no console
+        if not args.quiet:
+            console_report = ReportGenerator.generate_console_report(report)
+            print("\n" + console_report)
+        
+        # Salva relatório em arquivo se solicitado
+        if args.output:
+            filename = ReportGenerator.save_report_to_file(report, args.output)
+            print(f"\n💾 Relatório salvo em: {filename}")
+        
+        # Retorna código de saída baseado nos resultados
+        if report.errors:
+            print(f"\n❌ Validação concluída com {len(report.errors)} erro(s)")
+            return 1
+        elif report.warnings:
+            print(f"\n⚠️  Validação concluída com {len(report.warnings)} aviso(s)")
+            return 0
+        else:
+            print("\n✅ Validação concluída com sucesso - nenhum problema encontrado!")
+            return 0
+            
+    except Exception as e:
+        print(f"❌ Erro durante a validação: {e}")
         return 1
-    elif report.warnings:
-        print(f"\n⚠️  Validação concluída com {len(report.warnings)} aviso(s)")
-        return 0
-    else:
-        print("\n✅ Validação concluída com sucesso - nenhum problema encontrado!")
-        return 0
 
 if __name__ == "__main__":
     exit_code = main()

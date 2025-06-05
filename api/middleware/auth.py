@@ -1,54 +1,80 @@
 from functools import wraps
-from flask import request, jsonify, g
-from typing import Callable, Any, Dict, Optional, Union
-import sys
-import os
+from flask import request, jsonify, current_app, g
+from typing import Optional, Dict, Any, Callable
 import jwt
+import time
 
-# Adiciona o diretório pai ao path para permitir imports relativos
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from ..database.crud import obter_usuario, obter_grupo, obter_evento
+from ..database.models import TipoUsuario, FlagGestor
 
-from api.database.crud import obter_usuario, obter_grupo, obter_evento
+# Armazenamento simples para tokens invalidados (blacklist)
+# Em produção, isso deveria ser armazenado em Redis ou outro armazenamento persistente
+BLACKLISTED_TOKENS = set()
+
+def extrair_usuario_cpf_do_token() -> Optional[int]:
+    """Extrai o CPF do usuário do token JWT"""
+    try:
+        token = request.headers.get('Authorization')
+        if not token or not token.startswith('Bearer '):
+            return None
+        
+        token = token.split(' ')[1]
+        
+        # Verifica se o token está na blacklist
+        if token in BLACKLISTED_TOKENS:
+            return None
+            
+        payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
+        return payload.get('user_cpf')  # Alterado para 'user_cpf' para corresponder ao payload em auth.py
+    except (jwt.ExpiredSignatureError, jwt.InvalidTokenError, KeyError, IndexError):
+        return None
 
 def jwt_required(f):
-    """Decorator para proteger rotas com JWT"""
+    """Decorator que requer autenticação JWT"""
     @wraps(f)
     def decorated(*args, **kwargs):
-        token = None
-        auth_header = request.headers.get('Authorization')
-        
-        if auth_header:
-            try:
-                # Formato: "Bearer <token>"
-                token = auth_header.split(" ")[1]
-            except IndexError:
-                return jsonify({"erro": "Formato de token inválido"}), 401
-        
-        if not token:
-            return jsonify({"erro": "Token de autenticação necessário"}), 401
-        
         try:
-            secret_key = os.getenv('JWT_SECRET_KEY', 'fallback-secret-key')
-            payload = jwt.decode(token, secret_key, algorithms=['HS256'])
+            token = request.headers.get('Authorization')
+            if not token or not token.startswith('Bearer '):
+                return jsonify({"erro": "Token de acesso necessário"}), 401
             
-            if payload.get('type') != 'access':
-                return jsonify({"erro": "Tipo de token inválido"}), 401
+            token = token.split(' ')[1]
             
-            # Armazenar informações do usuário no contexto da requisição
-            g.current_user_cpf = payload['user_cpf']
-            g.current_user_email = payload['email']
-            g.current_user_tipo = payload['tipo_usuario']
-            g.current_user_flag_gestor = payload.get('flag_gestor', 'N')
+            # Verifica se o token está na blacklist
+            if token in BLACKLISTED_TOKENS:
+                return jsonify({"erro": "Token invalidado"}), 401
+                
+            payload = jwt.decode(token, current_app.config['SECRET_KEY'], algorithms=['HS256'])
             
+            # Verifica se o usuário ainda existe e está ativo
+            usuario = obter_usuario(payload['user_cpf'])  # Alterado para 'user_cpf'
+            if not usuario or not usuario.ativo:
+                return jsonify({"erro": "Usuário inválido ou inativo"}), 401
+            
+            # Store user info in g for later use
+            # Os valores já são strings no banco, não precisam de .value
+            g.current_user_cpf = payload['user_cpf']  # Alterado para 'user_cpf'
+            g.current_user_tipo = usuario.tipo_usuario
+            g.current_user_flag_gestor = usuario.flag_gestor
+            
+            return f(*args, **kwargs)
         except jwt.ExpiredSignatureError:
             return jsonify({"erro": "Token expirado"}), 401
         except jwt.InvalidTokenError:
             return jsonify({"erro": "Token inválido"}), 401
+        except (KeyError, IndexError):
+            return jsonify({"erro": "Token malformado"}), 401
         except Exception as e:
-            return jsonify({"erro": f"Erro na validação do token: {str(e)}"}), 401
-        
-        return f(*args, **kwargs)
+            return jsonify({"erro": f"Erro de autenticação: {str(e)}"}), 401
+    
     return decorated
+
+def invalidate_token(token):
+    """Adiciona um token à blacklist"""
+    if token and token.startswith('Bearer '):
+        token = token.split(' ')[1]
+    BLACKLISTED_TOKENS.add(token)
+    return True
 
 def get_current_user():
     """Retorna o usuário atual baseado no token JWT"""
@@ -80,7 +106,7 @@ def require_permission(allowed_types: list):
         return decorated
     return decorator
 
-# Decorators específicos para cada tipo de usuário
+# Decoradores específicos para cada tipo de usuário
 def rh_required(f):
     """Decorator que permite apenas usuários RH"""
     return require_permission(['rh'])(f)
@@ -102,130 +128,151 @@ def authenticated_user_required(f):
     """Decorator que permite qualquer usuário autenticado"""
     return require_permission(['comum', 'gestor', 'rh'])(f)
 
-def extrair_usuario_cpf_do_token() -> Optional[int]:
-    """Extrai o CPF do usuário do JWT token"""
-    return get_current_user_cpf()
 
-def verificar_permissao_empresa(usuario_cpf: int, cnpj_empresa: int) -> bool:
-    """Verifica se o usuário tem permissão para acessar dados da empresa"""
+def requer_permissao_usuario(f):
+    """Decorator que verifica permissão para acessar dados de usuário"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        try:
+            usuario_cpf = extrair_usuario_cpf_do_token()
+            if not usuario_cpf:
+                return jsonify({"erro": "Token de autenticação necessário"}), 401
+            
+            # Obtém o CPF do usuário target da URL
+            cpf_target = kwargs.get('cpf')
+            if not cpf_target:
+                return jsonify({"erro": "CPF não especificado"}), 400
+            
+            if not verificar_permissao_usuario_target(usuario_cpf, cpf_target):
+                return jsonify({"erro": "Sem permissão para acessar este usuário"}), 403
+            
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"erro": str(e)}), 500
+    
+    return decorated
+
+def requer_permissao_evento(f):
+    """Decorator que verifica permissão para acessar evento"""
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        try:
+            usuario_cpf = extrair_usuario_cpf_do_token()
+            if not usuario_cpf:
+                return jsonify({"erro": "Token de autenticação necessário"}), 401
+            
+            evento_id = kwargs.get('evento_id')
+            if not evento_id:
+                return jsonify({"erro": "ID do evento não especificado"}), 400
+            
+            evento = obter_evento(evento_id)
+            if not evento:
+                return jsonify({"erro": "Evento não encontrado"}), 404
+            
+            if not verificar_permissao_usuario_target(usuario_cpf, evento.cpf_usuario):
+                return jsonify({"erro": "Sem permissão para acessar este evento"}), 403
+            
+            return f(*args, **kwargs)
+        except Exception as e:
+            return jsonify({"erro": str(e)}), 500
+    
+    return decorated
+
+def verificar_permissao_usuario_target(usuario_cpf: int, target_cpf: int) -> bool:
+    """Verifica se o usuário tem permissão para acessar dados de outro usuário"""
     usuario = obter_usuario(usuario_cpf)
     if not usuario:
         return False
     
-    # RH tem acesso apenas à sua própria empresa
-    if usuario.tipo_usuario == 'rh':
-        if not usuario.grupo_id:
-            return False
-        grupo = obter_grupo(usuario.grupo_id)
-        return bool(grupo and grupo.cnpj_empresa == cnpj_empresa)
+    # RH pode acessar qualquer usuário da mesma empresa
+    # Compara com string diretamente (não enum)
+    if usuario.tipo_usuario == TipoUsuario.RH.value:
+        target_usuario = obter_usuario(target_cpf)
+        if target_usuario and target_usuario.grupo_id and usuario.grupo_id:
+            # Verifica se ambos pertencem à mesma empresa
+            grupo_usuario = obter_grupo(usuario.grupo_id)
+            grupo_target = obter_grupo(target_usuario.grupo_id)
+            if grupo_usuario and grupo_target:
+                return grupo_usuario.cnpj_empresa == grupo_target.cnpj_empresa
+        return False
     
-    # Gestores e usuários comuns também só acessam sua empresa
-    if usuario.grupo_id:
-        grupo = obter_grupo(usuario.grupo_id)
-        return bool(grupo and grupo.cnpj_empresa == cnpj_empresa)
+    # Gestores podem acessar usuários do mesmo grupo
+    # Compara com string diretamente (não enum)
+    if usuario.flag_gestor == FlagGestor.SIM.value:
+        target_usuario = obter_usuario(target_cpf)
+        if target_usuario:
+            return target_usuario.grupo_id == usuario.grupo_id
+        return False
     
-    return False
+    # Usuários comuns só podem acessar próprios dados
+    return usuario_cpf == target_cpf
 
 def verificar_permissao_grupo(usuario_cpf: int, grupo_id: int) -> bool:
-    """Verifica se o usuário tem permissão para acessar dados do grupo"""
+    """Verifica se o usuário tem permissão para gerenciar um grupo"""
     usuario = obter_usuario(usuario_cpf)
     if not usuario:
         return False
     
-    grupo = obter_grupo(grupo_id)
-    if not grupo:
-        return False
-    
-    # RH pode acessar qualquer grupo da sua empresa
-    if usuario.tipo_usuario == 'rh':
+    # RH pode gerenciar qualquer grupo da mesma empresa
+    if usuario.tipo_usuario == TipoUsuario.RH.value:
         if not usuario.grupo_id:
             return False
         grupo_usuario = obter_grupo(usuario.grupo_id)
-        return bool(grupo_usuario and grupo_usuario.cnpj_empresa == grupo.cnpj_empresa)
+        grupo_target = obter_grupo(grupo_id)
+        if grupo_usuario and grupo_target:
+            return grupo_usuario.cnpj_empresa == grupo_target.cnpj_empresa
+        return False
     
-    # Gestores só podem acessar seu próprio grupo
-    if usuario.flag_gestor == 'S':
+    # Gestores podem gerenciar apenas seu próprio grupo
+    if usuario.flag_gestor == FlagGestor.SIM.value:
         return usuario.grupo_id == grupo_id
     
-    # Usuários comuns só podem visualizar seu próprio grupo
-    return usuario.grupo_id == grupo_id
+    return False
 
-def verificar_permissao_usuario_target(usuario_cpf: int, usuario_target_cpf: int) -> bool:
-    """Verifica se o usuário tem permissão para acessar dados de outro usuário"""
+def verificar_permissao_empresa(usuario_cpf: int, cnpj_empresa: int) -> bool:
+    """Verifica se o usuário tem permissão para acessar dados de uma empresa"""
     usuario = obter_usuario(usuario_cpf)
-    usuario_target = obter_usuario(usuario_target_cpf)
-    
-    if not usuario or not usuario_target:
+    if not usuario:
         return False
     
-    # Usuário pode sempre acessar seus próprios dados
-    if usuario_cpf == usuario_target_cpf:
-        return True
-    
-    # RH pode acessar usuários da mesma empresa
-    if usuario.tipo_usuario == 'rh':
-        if not usuario.grupo_id or not usuario_target.grupo_id:
+    # RH só pode acessar sua própria empresa
+    if usuario.tipo_usuario == TipoUsuario.RH.value:
+        if not usuario.grupo_id:
             return False
-        grupo_rh = obter_grupo(usuario.grupo_id)
-        grupo_target = obter_grupo(usuario_target.grupo_id)
-        return bool(grupo_rh and grupo_target and grupo_rh.cnpj_empresa == grupo_target.cnpj_empresa)
-    
-    # Gestores podem acessar usuários do mesmo grupo
-    if usuario.flag_gestor == 'S':
-        return usuario.grupo_id == usuario_target.grupo_id
-    
-    # Usuários comuns só podem visualizar usuários do mesmo grupo
-    return usuario.grupo_id == usuario_target.grupo_id
-
-def verificar_permissao_evento(usuario_cpf: int, evento_id: int) -> bool:
-    """Verifica se o usuário tem permissão para acessar um evento"""
-    usuario = obter_usuario(usuario_cpf)
-    evento = obter_evento(evento_id)
-    
-    if not usuario or not evento:
+        grupo = obter_grupo(usuario.grupo_id)
+        if grupo:
+            return grupo.cnpj_empresa == cnpj_empresa
         return False
     
-    # Usuário pode sempre acessar seus próprios eventos
-    if evento.cpf_usuario == usuario_cpf:
-        return True
-    
-    # RH pode acessar eventos de usuários da mesma empresa
-    if usuario.tipo_usuario == 'rh':
-        return verificar_permissao_usuario_target(usuario_cpf, evento.cpf_usuario)
-    
-    # Gestores podem acessar eventos de usuários do mesmo grupo
-    if usuario.flag_gestor == 'S':
-        return verificar_permissao_usuario_target(usuario_cpf, evento.cpf_usuario)
-    
-    # Usuários comuns só podem acessar eventos de usuários do mesmo grupo (visualização)
-    return verificar_permissao_usuario_target(usuario_cpf, evento.cpf_usuario)
+    return False
 
-def filtrar_por_escopo_usuario(usuario_cpf: int) -> Optional[Dict[str, Union[int, None]]]:
+def get_empresa_do_usuario_rh(usuario_cpf: int) -> Optional[int]:
+    """Retorna o CNPJ da empresa do usuário RH"""
+    usuario = obter_usuario(usuario_cpf)
+    if not usuario or usuario.tipo_usuario != TipoUsuario.RH.value:
+        return None
+    
+    grupo = obter_grupo(usuario.grupo_id)
+    return grupo.cnpj_empresa if grupo else None
+
+def filtrar_por_escopo_usuario(usuario_cpf: int) -> Optional[Dict[str, Any]]:
     """Retorna filtros baseados no escopo do usuário"""
     usuario = obter_usuario(usuario_cpf)
     if not usuario:
         return None
     
-    if usuario.tipo_usuario == 'rh':
-        # RH vê apenas sua empresa
-        if usuario.grupo_id:
-            grupo = obter_grupo(usuario.grupo_id)
-            if grupo and grupo.cnpj_empresa:
-                return {"cnpj_empresa": grupo.cnpj_empresa}
-        return None
-    elif usuario.flag_gestor == 'S':
-        # Gestor vê apenas seu grupo
-        if usuario.grupo_id:
-            return {"grupo_id": usuario.grupo_id}
-        return None
-    else:
-        # Usuário comum vê apenas seu grupo
-        if usuario.grupo_id:
-            return {"grupo_id": usuario.grupo_id}
-        return None
+    # RH vê dados da empresa
+    if usuario.tipo_usuario == TipoUsuario.RH.value:
+        grupo = obter_grupo(usuario.grupo_id)
+        return {"cnpj_empresa": grupo.cnpj_empresa} if grupo else None
     
-    return None
-
+    # Gestores veem dados do grupo
+    if usuario.flag_gestor == FlagGestor.SIM.value:
+        return {"grupo_id": usuario.grupo_id}
+    
+    # Usuários comuns veem apenas próprios dados
+    return {"cpf_usuario": usuario_cpf}
+    
 # Decoradores para aplicar nas rotas
 def requer_permissao_empresa(f: Callable) -> Callable:
     """Decorator para verificar permissão de empresa"""
@@ -253,36 +300,6 @@ def requer_permissao_grupo(f: Callable) -> Callable:
         grupo_id = kwargs.get('grupo_id') or (request.json.get('grupo_id') if request.json else None)
         if grupo_id and not verificar_permissao_grupo(usuario_cpf, grupo_id):
             return jsonify({"erro": "Sem permissão para acessar dados deste grupo"}), 403
-        
-        return f(*args, **kwargs)
-    return decorated_function
-
-def requer_permissao_usuario(f: Callable) -> Callable:
-    """Decorator para verificar permissão de usuário"""
-    @wraps(f)
-    def decorated_function(*args: Any, **kwargs: Any) -> Any:
-        usuario_cpf = extrair_usuario_cpf_do_token()
-        if not usuario_cpf:
-            return jsonify({"erro": "Token de autenticação necessário"}), 401
-        
-        usuario_target_cpf = kwargs.get('usuario_cpf') or kwargs.get('cpf')
-        if usuario_target_cpf and not verificar_permissao_usuario_target(usuario_cpf, usuario_target_cpf):
-            return jsonify({"erro": "Sem permissão para acessar dados deste usuário"}), 403
-        
-        return f(*args, **kwargs)
-    return decorated_function
-
-def requer_permissao_evento(f: Callable) -> Callable:
-    """Decorator para verificar permissão de evento"""
-    @wraps(f)
-    def decorated_function(*args: Any, **kwargs: Any) -> Any:
-        usuario_cpf = extrair_usuario_cpf_do_token()
-        if not usuario_cpf:
-            return jsonify({"erro": "Token de autenticação necessário"}), 401
-        
-        evento_id = kwargs.get('evento_id')
-        if evento_id and not verificar_permissao_evento(usuario_cpf, evento_id):
-            return jsonify({"erro": "Sem permissão para acessar este evento"}), 403
         
         return f(*args, **kwargs)
     return decorated_function

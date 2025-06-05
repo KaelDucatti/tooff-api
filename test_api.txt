@@ -1,262 +1,315 @@
-[1m🚀 INICIANDO TESTE COMPLETO DA API FLASK...[0m
-[33m📝 Este script testa todas as funcionalidades da API[0m
-[33m🔧 Certifique-se de que o servidor Flask está rodando[0m
+[1m🎯 Iniciando testes da API Flask...[0m
+[33m⚙️ Modo debug: ATIVADO[0m
+[33m🔧 Para desativar debug, mude debugMode para false[0m
 
-[1m🚀 TESTE COMPLETO DA API FLASK[0m
+[1m🚀 TESTE COMPLETO DA API - VERSÃO 3.0[0m
+[34m📅 04/06/2025, 21:43:42[0m
+[34m🔗 Base URL: http://localhost:5000/api[0m
 
-[1m🔍 DIAGNÓSTICO INICIAL[0m
-[32m✅ Servidor Flask está rodando na porta 5000[0m
+[1m🔍 VERIFICANDO SERVIDOR[0m
+[32m✅ Servidor Flask rodando[0m
+[32m✅ Versão: 2.0[0m
+[32m✅ Database: MySQL[0m
 
-[1m📋 SEÇÃO 1: AUTENTICAÇÃO E JWT[0m
+[1m🔐 SEÇÃO 1: AUTENTICAÇÃO[0m
+[34m📤 Dados enviados: {
+  "email": "maria.rh@techsolutions.com",
+  "senha": "123456"
+}[0m
+[36m🌐 POST http://localhost:5000/api/auth/login[0m
 
 [36m=== Login RH ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: { access_token: '***', usuario: {...} }[0m
+[33m✅ Token recebido: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...[0m
+[33m👤 Usuário: Maria Silva (maria.rh@techsolutions.com)[0m
+[32m🔑 Token rh salvo com sucesso[0m
+[34m📤 Dados enviados: {
+  "email": "joao.gestor@techsolutions.com",
+  "senha": "123456"
+}[0m
+[36m🌐 POST http://localhost:5000/api/auth/login[0m
 
 [36m=== Login Gestor ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: { access_token: '***', usuario: {...} }[0m
+[33m✅ Token recebido: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...[0m
+[33m👤 Usuário: João Santos (joao.gestor@techsolutions.com)[0m
+[32m🔑 Token gestor salvo com sucesso[0m
+[34m📤 Dados enviados: {
+  "email": "ana.dev@techsolutions.com",
+  "senha": "123456"
+}[0m
+[36m🌐 POST http://localhost:5000/api/auth/login[0m
 
 [36m=== Login Usuário Comum ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: { access_token: '***', usuario: {...} }[0m
+[33m✅ Token recebido: eyJhbGciOiJIUzI1NiIsInR5cCI6Ik...[0m
+[33m👤 Usuário: Ana Costa (ana.dev@techsolutions.com)[0m
+[32m🔑 Token comum salvo com sucesso[0m
+[34m📤 Dados enviados: {
+  "email": "inexistente@test.com",
+  "senha": "senha_errada"
+}[0m
+[36m🌐 POST http://localhost:5000/api/auth/login[0m
 
 [36m=== Login Inválido (deve falhar) ===[0m
 ✅ Status: [32m401[0m
-[33mResponse: {
+[33m📄 Response: {
   "autenticado": false,
   "erro": "Credenciais inválidas"
 }[0m
 
+[33m🧪 Testando endpoint /me com token RH...[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/auth/me[0m
+
 [36m=== Endpoint /me ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: {
+[33m📄 Response: {
   "usuario": {
+    "UF": "SP",
     "ativo": true,
-    "criado_em": "2025-05-28T05:38:36.073185",
+    "cpf": 12345678901,
+    "criado_em": "2025-06-04T23:12:14",
     "email": "maria.rh@techsolutions.com",
-    "ferias_tiradas": 0,
-    "grupo_id": 1,
-    "grupo_nome": "Recursos Hu...[0m
+    "flag_gestor": "N",
+    "grupo_id": 2,
+    "grupo_nome": "Recursos Humanos",
+    "inicio_na_empresa": "2020-01-15",
+    "nome": "Maria Si...[0m
 
-[36m=== Refresh Token ===[0m
+[1m🌍 SEÇÃO 2: ENDPOINTS PÚBLICOS[0m
+[36m🌐 GET http://localhost:5000/api/ufs[0m
+
+[36m=== Listar UFs (público) ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: { access_token: '***', usuario: {...} }[0m
+[33m📋 Array com 27 itens[0m
+[33m📄 Primeiro item: {
+  "cod_uf": 12,
+  "uf": "AC"
+}...[0m
+[36m🌐 GET http://localhost:5000/api/tipos-ausencia[0m
 
-[1m📋 SEÇÃO 2: GESTÃO DE EMPRESAS[0m
-
-[36m=== Listar Empresas (RH) ===[0m
+[36m=== Listar Tipos de Ausência (público) ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: Array com 1 itens[0m
+[33m📋 Array com 10 itens[0m
+[33m📄 Primeiro item: {
+  "descricao": "Férias",
+  "id": 1,
+  "usa_turno": false
+}...[0m
+[36m🌐 GET http://localhost:5000/api/turnos[0m
 
-[36m=== Obter Empresa 1 ===[0m
+[36m=== Listar Turnos (público) ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: {
+[33m📋 Array com 5 itens[0m
+[33m📄 Primeiro item: {
+  "descricao": "Manhã",
+  "id": 1
+}...[0m
+
+[1m🔒 SEÇÃO 3: ENDPOINTS PROTEGIDOS[0m
+
+[36m👩‍💼 Testando com usuário RH[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/usuarios[0m
+
+[36m=== RH - Listar Usuários ===[0m
+✅ Status: [32m200[0m
+[33m📋 Array com 3 itens[0m
+[33m📄 Primeiro item: {
+  "UF": "SP",
+  "ativo": true,
+  "cpf": 12345678901,
+  "criado_em": "2025-06-04T23:12:14",
+  "emai...[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/grupos[0m
+
+[36m=== RH - Listar Grupos ===[0m
+✅ Status: [32m200[0m
+[33m📋 Array com 3 itens[0m
+[33m📄 Primeiro item: {
+  "ativo": true,
+  "cnpj_empresa": 12345678000190,
+  "criado_em": "2025-06-04",
+  "descricao": "Eq...[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/empresas[0m
+
+[36m=== RH - Listar Empresas ===[0m
+✅ Status: [32m200[0m
+[33m📋 Array com 1 itens[0m
+[33m📄 Primeiro item: {
   "ativa": true,
-  "cnpj": "12.345.678/0001-90",
-  "criado_em": "2025-05-28T05:38:35.899753",
-  "email": "empresa@techsolutions.com",
-  "endereco": "Rua das Flores, 123 - São Paulo/SP",
-  "id": 1,
- ...[0m
+  "cnpj": 12345678000190,
+  "criado_em": "2025-06-04",
+  "email": "contato@techso...[0m
 
-[36m=== Criar Empresa ===[0m
-✅ Status: [32m201[0m
-[33mResponse: {
-  "ativa": true,
-  "cnpj": "36309586/0001-96",
-  "criado_em": "2025-06-04T17:44:43.276316",
-  "email": "teste1749059083270@empresa.com",
-  "endereco": "Rua Teste, 123",
-  "id": 2,
-  "nome": "Empresa...[0m
+[36m👨‍💼 Testando com usuário Gestor[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/usuarios[0m
 
-[36m=== Gestor tentando listar empresas (deve falhar) ===[0m
+[36m=== Gestor - Listar Usuários do Grupo ===[0m
+✅ Status: [32m200[0m
+[33m📋 Array com 2 itens[0m
+[33m📄 Primeiro item: {
+  "UF": "SP",
+  "ativo": true,
+  "cpf": 23456789012,
+  "criado_em": "2025-06-04T23:12:16",
+  "emai...[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/empresas[0m
+
+[36m=== Gestor - Tentar Acessar Empresas (deve falhar) ===[0m
 ✅ Status: [32m403[0m
-[33mResponse: {
-  "erro": "Sem permissão para listar empresas"
+[33m📄 Response: {
+  "erro": "Apenas RH pode acessar dados de empresas"
 }[0m
 
-[1m📋 SEÇÃO 3: GESTÃO DE GRUPOS[0m
+[36m👤 Testando com usuário Comum[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/eventos[0m
 
-[36m=== Listar Grupos (RH) ===[0m
+[36m=== Usuário - Listar Eventos Próprios ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: Array com 3 itens[0m
-
-[36m=== Obter Grupo 1 ===[0m
-✅ Status: [32m200[0m
-[33mResponse: {
-  "ativo": true,
-  "criado_em": "2025-05-28T05:38:35.916568",
-  "descricao": "Equipe de recursos humanos",
-  "empresa_id": 1,
-  "empresa_nome": "Tech Solutions LTDA",
-  "id": 1,
-  "nome": "Recursos ...[0m
-
-[36m=== Estatísticas Grupo 1 ===[0m
-✅ Status: [32m200[0m
-[33mResponse: {
-  "eventos_aprovados": 0,
-  "eventos_pendentes": 1,
-  "grupo": "Recursos Humanos",
-  "total_usuarios": 2,
-  "usuarios_ativos": 2
+[33m📋 Array com 0 itens[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[34m📤 Dados enviados: {
+  "cpf": "99988877766",
+  "nome": "Teste Sem Permissão",
+  "email": "teste@test.com",
+  "senha": "123456"
 }[0m
+[36m🌐 POST http://localhost:5000/api/usuarios[0m
 
-[36m=== Criar Grupo ===[0m
-✅ Status: [32m201[0m
-[33mResponse: {
-  "ativo": true,
-  "criado_em": "2025-06-04T17:44:43.349407",
-  "descricao": "Grupo criado durante teste",
-  "empresa_id": 1,
-  "empresa_nome": "Tech Solutions LTDA",
-  "id": 4,
-  "nome": "Grupo Tes...[0m
-
-[1m📋 SEÇÃO 4: GESTÃO DE USUÁRIOS[0m
-
-[36m=== Listar Usuários (RH) ===[0m
-✅ Status: [32m200[0m
-[33mResponse: Array com 6 itens[0m
-
-[36m=== Usuários do Grupo 2 ===[0m
-✅ Status: [32m200[0m
-[33mResponse: Array com 3 itens[0m
-
-[36m=== Obter Usuário 1 ===[0m
-✅ Status: [32m200[0m
-[33mResponse: {
-  "ativo": true,
-  "criado_em": "2025-05-28T05:38:36.073185",
-  "email": "maria.rh@techsolutions.com",
-  "ferias_tiradas": 0,
-  "grupo_id": 1,
-  "grupo_nome": "Recursos Humanos",
-  "id": 1,
-  "inici...[0m
-
-[36m=== Criar Usuário ===[0m
-✅ Status: [32m201[0m
-[33mResponse: {
-  "ativo": true,
-  "criado_em": "2025-06-04T17:44:43.539889",
-  "email": "teste1749059083414@techsolutions.com",
-  "ferias_tiradas": 0,
-  "grupo_id": 2,
-  "grupo_nome": "Desenvolvimento",
-  "id": 7,...[0m
-
-[36m=== Gestor listando usuários ===[0m
-✅ Status: [32m200[0m
-[33mResponse: Array com 4 itens[0m
-
-[1m📋 SEÇÃO 5: GESTÃO DE EVENTOS[0m
-
-[36m=== Listar Eventos (Usuário) ===[0m
-✅ Status: [32m200[0m
-[33mResponse: Array com 5 itens[0m
-
-[36m=== Criar Evento ===[0m
-✅ Status: [32m201[0m
-[33mResponse: {
-  "aprovado_por_id": null,
-  "aprovado_por_nome": null,
-  "criado_em": "2025-06-04T17:44:43.594527",
-  "data_aprovacao": null,
-  "data_fim": "2024-12-19",
-  "data_inicio": "2024-12-15",
-  "descricao...[0m
-
-[36m=== Obter Evento Criado ===[0m
-✅ Status: [32m200[0m
-[33mResponse: {
-  "aprovado_por_id": null,
-  "aprovado_por_nome": null,
-  "criado_em": "2025-06-04T17:44:43.594527",
-  "data_aprovacao": null,
-  "data_fim": "2024-12-19",
-  "data_inicio": "2024-12-15",
-  "descricao...[0m
-
-[36m=== Aprovar Evento (Gestor) ===[0m
-✅ Status: [32m200[0m
-[33mResponse: {
-  "status": "Evento aprovado"
-}[0m
-
-[1m📋 SEÇÃO 6: CALENDÁRIO[0m
-
-[36m=== Calendário Geral ===[0m
-✅ Status: [32m200[0m
-[33mResponse: Array com 1 itens[0m
-
-[36m=== Calendário Grupo 2 ===[0m
-✅ Status: [32m200[0m
-[33mResponse: {
-  "eventos": [
-    {
-      "color": "red",
-      "end": "2024-02-20",
-      "extendedProps": {
-        "description": "Férias de carnaval",
-        "shift": null,
-        "status": "aprovado",
-     ...[0m
-
-[1m📋 SEÇÃO 7: VALIDAÇÕES DE SEGURANÇA[0m
-
-[36m=== Acesso sem token (deve falhar) ===[0m
-✅ Status: [32m401[0m
-[33mResponse: {
-  "erro": "Token de autenticação necessário"
-}[0m
-
-[36m=== Token inválido (deve falhar) ===[0m
-✅ Status: [32m401[0m
-[33mResponse: {
-  "erro": "Token inválido"
-}[0m
-
-[36m=== Usuário comum criando usuário (deve falhar) ===[0m
+[36m=== Usuário - Tentar Criar Usuário (deve falhar) ===[0m
 ✅ Status: [32m403[0m
-[33mResponse: {
+[33m📄 Response: {
   "erro": "Sem permissão para criar usuários"
 }[0m
 
-[36m=== Criar usuário com dados inválidos (deve falhar) ===[0m
-✅ Status: [32m400[0m
-[33mResponse: {
-  "erro": "Parâmetro ausente: 'email'"
+[1m📝 SEÇÃO 4: OPERAÇÕES CRUD[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/grupos/2[0m
+[34m🏢 CNPJ da empresa do RH: 12345678000190[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[34m📤 Dados enviados: {
+  "nome": "Grupo Teste 1749084256389",
+  "cnpj_empresa": 12345678000190,
+  "telefone": "(11) 1234-5678",
+  "descricao": "Grupo criado durante teste automatizado"
+}[0m
+[36m🌐 POST http://localhost:5000/api/grupos[0m
+
+[36m=== Criar Novo Grupo ===[0m
+✅ Status: [32m201[0m
+[33m📄 Response: {
+  "ativo": true,
+  "cnpj_empresa": 12345678000190,
+  "criado_em": "2025-06-04",
+  "descricao": "Grupo criado durante teste automatizado",
+  "empresa_nome": "Tech Solutions LTDA",
+  "id": 5,
+  "nome": "Grupo Teste 1749084256389",
+  "telefone": "(11) 1234-5678",
+  "total_usuarios": 0
+}[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[34m📤 Dados enviados: {
+  "descricao": "Grupo atualizado durante teste"
+}[0m
+[36m🌐 PUT http://localhost:5000/api/grupos/5[0m
+
+[36m=== Atualizar Grupo Criado ===[0m
+✅ Status: [32m200[0m
+[33m📄 Response: {
+  "status": "Grupo atualizado"
+}[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[34m📤 Dados enviados: {
+  "cpf_usuario": 34567890123,
+  "data_inicio": "2025-06-15",
+  "data_fim": "2025-06-19",
+  "id_tipo_ausencia": 1,
+  "uf": "SP"
+}[0m
+[36m🌐 POST http://localhost:5000/api/eventos[0m
+
+[36m=== Usuário - Criar Novo Evento ===[0m
+✅ Status: [32m201[0m
+[33m📄 Response: {
+  "UF": "SP",
+  "aprovado_por": 34567890123,
+  "aprovado_por_nome": "Ana Costa",
+  "cpf_usuario": 34567890123,
+  "criado_em": "2025-06-05T00:44:26",
+  "data_fim": "2025-06-19",
+  "data_inicio": "2025-06-15",
+  "id": 6,
+  "id_tipo_ausencia": 1,
+  "status": "pendente",
+  "tipo_ausencia_desc": "Féria...[0m
+
+[1m🛡️ SEÇÃO 5: VALIDAÇÕES DE SEGURANÇA[0m
+[36m🌐 GET http://localhost:5000/api/usuarios[0m
+
+[36m=== Acesso sem token (deve falhar) ===[0m
+✅ Status: [32m401[0m
+[33m📄 Response: {
+  "erro": "Token de acesso necessário"
+}[0m
+[33m🔑 Token usado: token-completamente-...[0m
+[36m🌐 GET http://localhost:5000/api/usuarios[0m
+
+[36m=== Token inválido (deve falhar) ===[0m
+✅ Status: [32m401[0m
+[33m📄 Response: {
+  "erro": "Token inválido"
+}[0m
+[33m🔑 Token usado: Bearer token-malform...[0m
+[36m🌐 GET http://localhost:5000/api/usuarios[0m
+
+[36m=== Token malformado (deve falhar) ===[0m
+✅ Status: [32m401[0m
+[33m📄 Response: {
+  "erro": "Token inválido"
 }[0m
 
-[36m=== Logout ===[0m
+[1m🚪 SEÇÃO 6: LOGOUT[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 POST http://localhost:5000/api/auth/logout[0m
+
+[36m=== Logout RH ===[0m
 ✅ Status: [32m200[0m
-[33mResponse: {
+[33m📄 Response: {
   "message": "Logout realizado com sucesso"
+}[0m
+[33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
+[36m🌐 GET http://localhost:5000/api/auth/me[0m
+
+[36m=== Usar token após logout (deve falhar) ===[0m
+✅ Status: [32m401[0m
+[33m📄 Response: {
+  "erro": "Token invalidado"
 }[0m
 
 [1m📊 RELATÓRIO FINAL[0m
 ============================================================
-[1mTotal de Testes:[0m 30
-[32mTestes Passaram:[0m 30
+[1mTotal de Testes:[0m 23
+[32mTestes Passaram:[0m 23
 [31mTestes Falharam:[0m 0
 [1mTaxa de Sucesso:[0m [32m100.0%[0m
 
-[1m🔍 ANÁLISE POR SEÇÃO:[0m
-[36m1. Autenticação:[0m Sistema JWT funcionando
-[36m2. Empresas:[0m CRUD com permissões RH
-[36m3. Grupos:[0m Gestão hierárquica
-[36m4. Usuários:[0m Controle de acesso por nível
-[36m5. Eventos:[0m Sistema de aprovação
-[36m6. Calendário:[0m Visualização de eventos
-[36m7. Segurança:[0m Validações e permissões
+[1m🔑 TOKENS OBTIDOS:[0m
+[32m✅ RH: OK[0m
+[32m✅ GESTOR: OK[0m
+[32m✅ COMUM: OK[0m
 
-[32m🎉 API FUNCIONANDO PERFEITAMENTE![0m
-[32m✅ Todos os sistemas principais estão operacionais[0m
+[1m💡 DIAGNÓSTICO:[0m
+[32m🎉 API funcionando perfeitamente![0m
 
-[1m💡 PRÓXIMOS PASSOS:[0m
-[32m- API pronta para uso em produção[0m
-[32m- Considerar implementar testes automatizados[0m
-[32m- Documentar endpoints para equipe[0m
+[1m🔧 COMANDOS ÚTEIS:[0m
+[36m- Recriar dados: python scripts/seed_data_complete.py[0m
+[36m- Verificar integridade: python scripts/validate_integrity.py[0m
+[36m- Verificar ambiente: python scripts/check_environment.py[0m

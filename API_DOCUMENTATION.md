@@ -170,11 +170,10 @@ O sistema implementa diversos middlewares para controle de acesso:
 ## 🏢 2. EMPRESAS (5 Endpoints) - CNPJ como PK
 
 ### `GET /api/empresas`
-**Funcionalidade**: Listar empresas (RH apenas)
+**Funcionalidade**: Listar empresas (RH vê apenas sua própria empresa)
 - **Headers**: `Authorization: Bearer <token>`
-- **Filtros**: `?ativas=true/false`
 - **Status**: 200 (sucesso), 403 (sem permissão)
-- **Permissões**: RH
+- **Permissões**: RH (apenas própria empresa)
 
 **Resposta de sucesso:**
 \`\`\`json
@@ -217,29 +216,23 @@ O sistema implementa diversos middlewares para controle de acesso:
 
 ### `POST /api/empresas`
 **Funcionalidade**: Criar nova empresa
-- **Headers**: `Authorization: Bearer <token>`
-- **Campos obrigatórios**: `cnpj`, `id`, `nome`, `endereco`, `telefone`, `email`
-- **Status**: 201 (criado), 400 (dados inválidos), 409 (conflito)
-- **Permissões**: RH
+- **Status**: 403 (RH não tem permissão)
+- **Permissões**: Nenhuma (funcionalidade desabilitada para RH)
 
-**Exemplo de requisição:**
+**Resposta de erro:**
 \`\`\`json
 {
-  "cnpj": 98765432000111,
-  "id": 2,
-  "nome": "Nova Empresa LTDA",
-  "endereco": "Av. Paulista, 1000 - São Paulo/SP",
-  "telefone": "(11) 9876-5432",
-  "email": "contato@novaempresa.com"
+  "erro": "RH não tem permissão para criar empresas"
 }
 \`\`\`
 
 ### `PUT /api/empresas/{cnpj}`
-**Funcionalidade**: Atualizar empresa
+**Funcionalidade**: Atualizar empresa (RH apenas sua própria)
 - **Headers**: `Authorization: Bearer <token>`
 - **Exemplo**: `PUT /api/empresas/12345678000190`
-- **Status**: 200 (sucesso), 404 (não encontrada)
-- **Permissões**: RH
+- **Restrições**: RH não pode alterar CNPJ ou ID
+- **Status**: 200 (sucesso), 403 (sem permissão), 404 (não encontrada)
+- **Permissões**: RH (apenas própria empresa)
 
 **Exemplo de requisição:**
 \`\`\`json
@@ -250,16 +243,14 @@ O sistema implementa diversos middlewares para controle de acesso:
 \`\`\`
 
 ### `DELETE /api/empresas/{cnpj}`
-**Funcionalidade**: Desativar empresa (soft delete)
-- **Headers**: `Authorization: Bearer <token>`
-- **Exemplo**: `DELETE /api/empresas/12345678000190`
-- **Status**: 200 (sucesso), 404 (não encontrada)
-- **Permissões**: RH
+**Funcionalidade**: Deletar empresa
+- **Status**: 403 (RH não tem permissão)
+- **Permissões**: Nenhuma (funcionalidade desabilitada para RH)
 
-**Resposta de sucesso:**
+**Resposta de erro:**
 \`\`\`json
 {
-  "status": "Empresa desativada"
+  "erro": "RH não tem permissão para deletar empresas"
 }
 \`\`\`
 
@@ -1065,6 +1056,3 @@ O sistema implementa diversos middlewares para controle de acesso:
 - [Documentação do Schema](SCHEMA_DOCUMENTATION.md)
 - [Documentação do Sistema de Validação](VALIDATION_DOCUMENTATION.md)
 - [Guia de Migração para v2.0](MIGRATION_GUIDE.md)
-\`\`\`
-
-Now, let's create a schema documentation file:

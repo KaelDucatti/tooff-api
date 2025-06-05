@@ -6,6 +6,7 @@ from ..database.crud import (
     criar_usuario, listar_usuarios, obter_usuario,
     atualizar_usuario, deletar_usuario, usuario_para_dict
 )
+from ..database.models import TipoUsuario, FlagGestor
 from ..middleware.auth import (
     jwt_required, requer_permissao_usuario, filtrar_por_escopo_usuario,
     extrair_usuario_cpf_do_token, verificar_permissao_grupo
@@ -90,6 +91,10 @@ def criar():
         if not usuario_logado:
             return jsonify({"erro": "Usuário não encontrado"}), 404
         
+        # RH e Gestores podem criar usuários - VERIFICAÇÃO DE PERMISSÃO PRIMEIRO
+        if usuario_logado.tipo_usuario not in [TipoUsuario.RH] and usuario_logado.flag_gestor != FlagGestor.SIM:
+            return jsonify({"erro": "Sem permissão para criar usuários"}), 403
+        
         grupo_id = dados.get("grupo_id")
         if grupo_id is None:
             return jsonify({"erro": "grupo_id é obrigatório"}), 400
@@ -97,10 +102,6 @@ def criar():
         # Verifica se pode criar usuário no grupo especificado
         if not verificar_permissao_grupo(usuario_cpf, grupo_id):
             return jsonify({"erro": "Sem permissão para criar usuários neste grupo"}), 403
-        
-        # RH e Gestores podem criar usuários
-        if usuario_logado.tipo_usuario not in ['rh'] and usuario_logado.flag_gestor != 'S':
-            return jsonify({"erro": "Sem permissão para criar usuários"}), 403
         
         usuario = criar_usuario(
             cpf=dados["cpf"],
@@ -110,8 +111,8 @@ def criar():
             grupo_id=grupo_id,
             inicio_na_empresa=dados["inicio_na_empresa"],
             uf=dados["uf"],
-            tipo_usuario=dados.get("tipo_usuario", "comum"),
-            flag_gestor=dados.get("flag_gestor", "N")
+            tipo_usuario=dados.get("tipo_usuario", TipoUsuario.COMUM.value),
+            flag_gestor=dados.get("flag_gestor", FlagGestor.NAO.value)
         )
         return jsonify(usuario_para_dict(usuario)), 201
     except KeyError as ke:
@@ -146,12 +147,12 @@ def atualizar(cpf: int):
             return jsonify({"erro": "Usuário logado não encontrado"}), 404
         
         # Usuários comuns só podem atualizar alguns campos próprios
-        if usuario_logado.tipo_usuario == 'comum' and usuario_logado.flag_gestor == 'N' and usuario_cpf == cpf:
+        if usuario_logado.tipo_usuario == TipoUsuario.COMUM and usuario_logado.flag_gestor == FlagGestor.NAO and usuario_cpf == cpf:
             # Permite apenas atualização de senha e dados pessoais
             campos_permitidos = ['senha', 'nome', 'email']
             dados_filtrados = {k: v for k, v in dados.items() if k in campos_permitidos}
             dados = dados_filtrados
-        elif usuario_logado.tipo_usuario == 'comum' and usuario_logado.flag_gestor == 'N':
+        elif usuario_logado.tipo_usuario == TipoUsuario.COMUM and usuario_logado.flag_gestor == FlagGestor.NAO:
             return jsonify({"erro": "Usuários comuns só podem atualizar próprios dados"}), 403
         
         sucesso = atualizar_usuario(cpf, **dados)
@@ -184,7 +185,7 @@ def deletar(cpf: int):
             return jsonify({"erro": "Usuário logado não encontrado"}), 404
         
         # Apenas RH e Gestores podem desativar usuários
-        if usuario_logado.tipo_usuario not in ['rh'] and usuario_logado.flag_gestor != 'S':
+        if usuario_logado.tipo_usuario not in [TipoUsuario.RH] and usuario_logado.flag_gestor != FlagGestor.SIM:
             return jsonify({"erro": "Sem permissão para desativar usuários"}), 403
         
         # Usuário não pode desativar a si mesmo

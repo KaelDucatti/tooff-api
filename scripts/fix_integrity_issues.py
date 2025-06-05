@@ -4,15 +4,16 @@ Script para corrigir problemas de integridade encontrados
 import sys
 from pathlib import Path
 from dotenv import load_dotenv
-from api.database.models import init_db, get_session, Usuario, Grupo, Evento
+from api.database.models import init_db, get_session, Usuario, Empresa, Grupo, Evento
 from api.validation.integrity_checker import CPFCNPJIntegrityChecker
 from api.validation.cpf_cnpj_validator import formatar_cpf, formatar_cnpj
 
+# Adiciona o diretório pai ao path para importar os módulos
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 # Carrega variáveis de ambiente
 load_dotenv()
-
-# Adiciona o diretório pai ao path para importar os módulos
-sys.path.append(str(Path(__file__).parent.parent))
 
 
 class IntegrityFixer:
@@ -73,6 +74,26 @@ class IntegrityFixer:
                         f"Falha ao desativar grupo {grupo_data['id']}: {e}"
                     )
     
+    def fix_invalid_cpf_cnpj(self) -> None:
+        """Corrige CPF/CNPJ inválidos"""
+        with get_session() as session:
+            try:
+                # Busca usuários com CPF inválido
+                usuarios = session.query(Usuario).all()
+                for usuario in usuarios:
+                    # Aqui você pode implementar lógica para corrigir CPFs
+                    # Por exemplo, remover caracteres especiais, validar formato, etc.
+                    pass
+                
+                # Busca empresas com CNPJ inválido
+                empresas = session.query(Empresa).all()
+                for empresa in empresas:
+                    # Aqui você pode implementar lógica para corrigir CNPJs
+                    pass
+                    
+            except Exception as e:
+                self.fixes_failed.append(f"Erro ao corrigir CPF/CNPJ: {e}")
+    
     def apply_fixes(self, report) -> None:
         """Aplica correções baseadas no relatório"""
         print("🔧 Iniciando correções automáticas...")
@@ -107,41 +128,47 @@ def main():
     # Inicializa o banco de dados
     try:
         init_db("sqlite:///database/tooff_app.db")
+        print("✅ Conexão com banco estabelecida")
     except Exception as e:
         print(f"❌ Erro ao conectar com o banco: {e}")
         return 1
     
     # Executa verificação primeiro
-    checker = CPFCNPJIntegrityChecker()
-    report = checker.run_all_checks()
-    
-    if not report.errors:
-        print("✅ Nenhum problema de integridade encontrado!")
-        return 0
-    
-    print(f"🔍 Encontrados {len(report.errors)} problema(s) de integridade")
-    
-    # Pergunta se deve aplicar correções
-    response = input("Deseja aplicar correções automáticas? (s/N): ")
-    if response.lower() not in ['s', 'sim', 'y', 'yes']:
-        print("❌ Correções canceladas pelo usuário")
-        return 0
-    
-    # Aplica correções
-    fixer = IntegrityFixer()
-    fixer.apply_fixes(report)
-    
-    # Executa verificação novamente
-    print("\n🔍 Executando nova verificação...")
-    new_checker = CPFCNPJIntegrityChecker()
-    new_report = new_checker.run_all_checks()
-    
-    if new_report.errors:
-        print(f"⚠️  Ainda existem {len(new_report.errors)} problema(s) que precisam de correção manual")
+    try:
+        checker = CPFCNPJIntegrityChecker()
+        report = checker.run_all_checks()
+        
+        if not report.errors:
+            print("✅ Nenhum problema de integridade encontrado!")
+            return 0
+        
+        print(f"🔍 Encontrados {len(report.errors)} problema(s) de integridade")
+        
+        # Pergunta se deve aplicar correções
+        response = input("Deseja aplicar correções automáticas? (s/N): ")
+        if response.lower() not in ['s', 'sim', 'y', 'yes']:
+            print("❌ Correções canceladas pelo usuário")
+            return 0
+        
+        # Aplica correções
+        fixer = IntegrityFixer()
+        fixer.apply_fixes(report)
+        
+        # Executa verificação novamente
+        print("\n🔍 Executando nova verificação...")
+        new_checker = CPFCNPJIntegrityChecker()
+        new_report = new_checker.run_all_checks()
+        
+        if new_report.errors:
+            print(f"⚠️  Ainda existem {len(new_report.errors)} problema(s) que precisam de correção manual")
+            return 1
+        else:
+            print("🎉 Todos os problemas de integridade foram corrigidos!")
+            return 0
+            
+    except Exception as e:
+        print(f"❌ Erro durante a correção: {e}")
         return 1
-    else:
-        print("🎉 Todos os problemas de integridade foram corrigidos!")
-        return 0
 
 if __name__ == "__main__":
     exit_code = main()

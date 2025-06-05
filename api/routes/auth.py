@@ -1,17 +1,17 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, current_app
 from typing import Dict, Any
 import jwt
 import datetime
 import os
 
 from ..database.crud import autenticar_usuario, usuario_para_dict, obter_usuario
-from ..middleware.auth import jwt_required, get_current_user
+from ..middleware.auth import jwt_required, get_current_user, invalidate_token
 
 auth_bp = Blueprint('auth', __name__)
 
 def generate_tokens(usuario):
     """Gera tokens de acesso e refresh para o usuário"""
-    secret_key = os.getenv('JWT_SECRET_KEY', 'fallback-secret-key')
+    secret_key = current_app.config.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-secret-key'))
     
     # Token de acesso (1 hora)
     access_payload = {
@@ -78,7 +78,7 @@ def refresh():
         return jsonify({"erro": "Refresh token necessário"}), 400
     
     try:
-        secret_key = os.getenv('JWT_SECRET_KEY', 'fallback-secret-key')
+        secret_key = current_app.config.get('SECRET_KEY', os.getenv('SECRET_KEY', 'fallback-secret-key'))
         payload = jwt.decode(refresh_token, secret_key, algorithms=['HS256'])
         
         if payload.get('type') != 'refresh':
@@ -109,7 +109,8 @@ def refresh():
 @jwt_required
 def logout():
     """Logout (invalidar token)"""
-    # Em uma implementação real, você adicionaria o token a uma blacklist
+    token = request.headers.get('Authorization')
+    invalidate_token(token)
     return jsonify({"message": "Logout realizado com sucesso"}), 200
 
 @auth_bp.route('/me', methods=['GET'])

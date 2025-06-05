@@ -63,7 +63,7 @@ API Flask para gestão de eventos, usuários e grupos em empresas, com sistema d
 - **Empresa (CNPJ)** → **Grupo** → **Usuário (CPF)** → **Evento**
 
 ### Tipos de Usuário
-- **RH**: CRUD completo em empresas, grupos, usuários e eventos
+- **RH**: Acesso limitado à própria empresa (não pode criar/deletar empresas)
 - **Gestor** (flag_gestor='S'): CRUD em usuários e eventos do seu grupo, aprovação de eventos
 - **Comum**: CRUD nos próprios eventos, visualização do calendário do grupo
 
@@ -219,6 +219,27 @@ Após executar o script de dados de exemplo:
 ## 📄 Licença
 
 Este projeto está licenciado sob a licença MIT - veja o arquivo LICENSE para detalhes.
-\`\`\`
 
-Now, let's create a detailed API documentation file:
+  
+### Próximos passos:
+
+- **Rastreamento de saldo de férias** (dias de férias anuais por usuário)
+- **Aviso prévio mínimo** para solicitações de férias (ex: 15 dias)
+- **Máximo de dias consecutivos de férias** (ex: 30 dias)
+- **Períodos de bloqueio** (sem férias durante períodos críticos)
+- **Prevenção de sobreposição** (máx % da equipe de férias simultaneamente)
+- **Eventos recorrentes** (ausências semanais/mensais)
+- **Suporte a meio período**
+- **Categorias de eventos** (férias, licença médica, treinamento, etc.)
+- **Notificações por email** para mudanças de status de eventos
+- **Notificações de lembrete** para aprovações pendentes (24h, 48h)
+- **Notificações de escalação** para aprovações atrasadas (para alta gestão)
+- **Notificações da equipe** para ausências aprovadas
+- **Notificações de aniversário e datas comemorativas**
+- **Alertas de saldo de férias** (quando estiver baixo)
+- **Aprovação automática** para certos tipos de eventos (ex: consultas médicas sob 2 horas)
+- **Delegação de autoridade de aprovação** (atribuição temporária de gestor)
+- **Operações em lote** para solicitações similares
+- **Solicitações baseadas em templates** (padrões comuns de ausência)
+- **Regras de aprovação condicional** (baseadas no tamanho da equipe, temporada, etc.)
+- **Integração com sistemas de folha de pagamento** (cálculo automático de deduções)

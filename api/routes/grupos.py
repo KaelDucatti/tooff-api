@@ -68,16 +68,21 @@ def criar():
         if not usuario_cpf:
             return jsonify({"erro": "Token de autenticação necessário"}), 401
         
-        # Verifica se o usuário pode criar grupos na empresa especificada
-        cnpj_empresa = dados["cnpj_empresa"]
-        if not verificar_permissao_empresa(usuario_cpf, cnpj_empresa):
-            return jsonify({"erro": "Sem permissão para criar grupos nesta empresa"}), 403
-        
         # Apenas RH pode criar grupos
         from ..database.crud import obter_usuario
         usuario = obter_usuario(usuario_cpf)
         if not usuario or usuario.tipo_usuario != 'rh':
             return jsonify({"erro": "Apenas RH pode criar grupos"}), 403
+        
+        # Verifica se o usuário pode criar grupos na empresa especificada
+        cnpj_empresa = dados["cnpj_empresa"]
+
+        # RH pode criar grupos apenas na sua própria empresa
+        if usuario.grupo_id:
+            from ..database.crud import obter_grupo
+            grupo_rh = obter_grupo(usuario.grupo_id)
+            if not grupo_rh or grupo_rh.cnpj_empresa != cnpj_empresa:
+                return jsonify({"erro": "RH só pode criar grupos na sua própria empresa"}), 403
         
         grupo = criar_grupo(
             nome=dados["nome"],

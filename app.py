@@ -14,6 +14,7 @@ from api.routes.ufs import ufs_bp
 from api.routes.feriados import feriados_bp
 from api.routes.validation import validation_bp
 from api.database.models import init_db
+from api.routes.calendario import calendario_bp
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -69,6 +70,7 @@ def create_app():
     app.register_blueprint(ufs_bp, url_prefix='/api/ufs')
     app.register_blueprint(feriados_bp, url_prefix='/api/feriados')
     app.register_blueprint(validation_bp, url_prefix='/api/validation')
+    app.register_blueprint(calendario_bp, url_prefix='/api/calendario')
     
     return app
 
