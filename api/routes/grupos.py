@@ -64,6 +64,12 @@ def criar():
     dados: Dict[str, Any] = request.get_json(force=True)
     
     try:
+        # Validar dados de entrada
+        from ..validation.input_validator import validar_grupo_input
+        erros = validar_grupo_input(dados)
+        if erros:
+            return jsonify({"erro": erros[0]}), 400
+            
         usuario_cpf = extrair_usuario_cpf_do_token()
         if not usuario_cpf:
             return jsonify({"erro": "Token de autenticação necessário"}), 401
@@ -75,7 +81,17 @@ def criar():
             return jsonify({"erro": "Apenas RH pode criar grupos"}), 403
         
         # Verifica se o usuário pode criar grupos na empresa especificada
-        cnpj_empresa = dados["cnpj_empresa"]
+        cnpj_empresa = dados.get("cnpj_empresa")
+        if not cnpj_empresa or len(str(cnpj_empresa)) != 14:
+            return jsonify({"erro": "CNPJ inválido"}), 400
+
+        # Validação de campos obrigatórios
+        nome = dados.get("nome")
+        if not nome or not nome.strip():
+            return jsonify({"erro": "Nome do grupo é obrigatório"}), 400
+            
+        if not dados.get("telefone"):
+            return jsonify({"erro": "Telefone é obrigatório"}), 400
 
         # RH pode criar grupos apenas na sua própria empresa
         if usuario.grupo_id:

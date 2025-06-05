@@ -39,6 +39,40 @@ def listar_estaduais():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
+@feriados_bp.route('', methods=['GET'])
+def listar_todos():
+    """Lista todos os feriados (endpoint público)"""
+    try:
+        uf = request.args.get('uf')
+        
+        # Combina feriados nacionais e estaduais
+        feriados_nacionais = listar_feriados_nacionais(uf)
+        feriados_estaduais = listar_feriados_estaduais(uf)
+        
+        todos_feriados = []
+        
+        # Adiciona feriados nacionais
+        for f in feriados_nacionais:
+            todos_feriados.append({
+                "data_feriado": f.data_feriado.isoformat(),
+                "uf": f.uf,
+                "descricao_feriado": f.descricao_feriado,
+                "tipo": "nacional"
+            })
+        
+        # Adiciona feriados estaduais
+        for f in feriados_estaduais:
+            todos_feriados.append({
+                "data_feriado": f.data_feriado.isoformat(),
+                "uf": f.uf,
+                "descricao_feriado": f.descricao_feriado,
+                "tipo": "estadual"
+            })
+        
+        return jsonify(todos_feriados), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
 @feriados_bp.route('/nacionais', methods=['POST'])
 @jwt_required
 @rh_required

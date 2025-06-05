@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
-from sqlalchemy import select, and_, func
+from sqlalchemy import select, and_, func, extract
 
 from .models import (
     get_session, Usuario, Empresa, Grupo, Evento, UF,
@@ -169,6 +169,15 @@ def criar_usuario(cpf: int, nome: str, email: str, senha: str,
                  tipo_usuario: str = TipoUsuario.COMUM.value, 
                  flag_gestor: str = FlagGestor.NAO.value, **kwargs) -> Usuario:
     with get_session() as session:
+        # Verificar se email já existe
+        email_normalizado = email.strip().lower()
+        email_existente = session.execute(
+            select(Usuario).where(Usuario.email == email_normalizado)
+        ).scalar_one_or_none()
+        
+        if email_existente:
+            raise ValueError("Email já cadastrado")
+            
         # Converte string para date se necessário
         data_inicio = datetime.strptime(inicio_na_empresa, "%Y-%m-%d").date()
         

@@ -2,6 +2,7 @@ from functools import wraps
 from flask import request, jsonify, current_app, g
 from typing import Optional, Dict, Any, Callable
 import jwt
+import time
 
 from ..database.crud import obter_usuario, obter_grupo, obter_evento
 from ..database.models import TipoUsuario, FlagGestor
@@ -142,6 +143,16 @@ def requer_permissao_usuario(f):
             if not cpf_target:
                 return jsonify({"erro": "CPF não especificado"}), 400
             
+            # Para operações DELETE, verificar se é RH ou gestor
+            if request.method == 'DELETE':
+                from ..database.crud import obter_usuario
+                usuario = obter_usuario(usuario_cpf)
+                if usuario and (usuario.tipo_usuario == TipoUsuario.RH.value or 
+                               usuario.flag_gestor == FlagGestor.SIM.value):
+                    # RH e gestores podem deletar usuários (verificação adicional no handler)
+                    return f(*args, **kwargs)
+            
+            # Para outras operações, verificar permissão normal
             if not verificar_permissao_usuario_target(usuario_cpf, cpf_target):
                 return jsonify({"erro": "Sem permissão para acessar este usuário"}), 403
             

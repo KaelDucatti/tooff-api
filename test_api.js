@@ -1,4 +1,4 @@
-// Teste completo da API Flask - Versão 3.0 (Reescrito do zero)
+// Teste completo da API Flask - Versão 4.0 (Ampliado com testes abrangentes)
 const BASE_URL = "http://localhost:5000/api"
 
 // Configuração de cores para output
@@ -20,6 +20,12 @@ const testState = {
   tokens: {},
   usuarios: {},
   debugMode: true,
+  // Armazenar IDs de entidades criadas durante os testes para uso posterior
+  entidadesCriadas: {
+    eventos: [],
+    usuarios: [],
+    grupos: [],
+  },
 }
 
 // Função auxiliar para fazer requisições com debugging melhorado
@@ -105,6 +111,8 @@ function logResult(testName, result, expectedStatus = null) {
       console.log(`${colors.yellow}📄 Response: ${truncated}${colors.reset}`)
     }
   }
+
+  return isSuccess
 }
 
 // Função para verificar se o servidor está rodando
@@ -176,6 +184,13 @@ async function testarAutenticacao() {
   })
   logResult("Login Inválido (deve falhar)", loginInvalido, 401)
 
+  // Testar login com senha incorreta
+  const loginSenhaIncorreta = await makeRequest("POST", `${BASE_URL}/auth/login`, {
+    email: "maria.rh@techsolutions.com",
+    senha: "senha_errada",
+  })
+  logResult("Login com Senha Incorreta (deve falhar)", loginSenhaIncorreta, 401)
+
   // Testar endpoint /me se temos token
   if (testState.tokens.rh) {
     console.log(`\n${colors.yellow}🧪 Testando endpoint /me com token RH...${colors.reset}`)
@@ -205,6 +220,10 @@ async function testarEndpointsPublicos() {
   // Testar turnos (pode ser público)
   const turnos = await makeRequest("GET", `${BASE_URL}/turnos`)
   logResult("Listar Turnos (público)", turnos)
+
+  // Testar feriados (pode ser público)
+  const feriados = await makeRequest("GET", `${BASE_URL}/feriados`)
+  logResult("Listar Feriados (público)", feriados)
 }
 
 // Função para testar endpoints protegidos
@@ -232,6 +251,10 @@ async function testarEndpointsProtegidos() {
     // Listar empresas
     const empresas = await makeRequest("GET", `${BASE_URL}/empresas`, null, testState.tokens.rh)
     logResult("RH - Listar Empresas", empresas, 200)
+
+    // Listar calendário
+    const calendario = await makeRequest("GET", `${BASE_URL}/calendario`, null, testState.tokens.rh)
+    logResult("RH - Listar Calendário", calendario, 200)
   }
 
   // Testar com token Gestor
@@ -245,6 +268,17 @@ async function testarEndpointsProtegidos() {
     // Tentar acessar empresas (deve falhar)
     const empresasGestor = await makeRequest("GET", `${BASE_URL}/empresas`, null, testState.tokens.gestor)
     logResult("Gestor - Tentar Acessar Empresas (deve falhar)", empresasGestor, 403)
+
+    // Listar calendário do grupo
+    if (testState.usuarios.gestor && testState.usuarios.gestor.grupo_id) {
+      const calendarioGrupo = await makeRequest(
+        "GET",
+        `${BASE_URL}/calendario/grupo/${testState.usuarios.gestor.grupo_id}`,
+        null,
+        testState.tokens.gestor,
+      )
+      logResult("Gestor - Listar Calendário do Grupo", calendarioGrupo, 200)
+    }
   }
 
   // Testar com token Usuário Comum
@@ -268,12 +302,22 @@ async function testarEndpointsProtegidos() {
       testState.tokens.comum,
     )
     logResult("Usuário - Tentar Criar Usuário (deve falhar)", criarUsuario, 403)
+
+    // Tentar acessar calendário de outro grupo (deve falhar)
+    const outroGrupoId = testState.usuarios.comum.grupo_id === 1 ? 2 : 1
+    const calendarioOutroGrupo = await makeRequest(
+      "GET",
+      `${BASE_URL}/calendario/grupo/${outroGrupoId}`,
+      null,
+      testState.tokens.comum,
+    )
+    logResult("Usuário - Tentar Acessar Calendário de Outro Grupo (deve falhar)", calendarioOutroGrupo, 403)
   }
 }
 
-// Função para testar operações CRUD
+// Função para testar operações CRUD básicas
 async function testarOperacoesCRUD() {
-  console.log(`\n${colors.bright}📝 SEÇÃO 4: OPERAÇÕES CRUD${colors.reset}`)
+  console.log(`\n${colors.bright}📝 SEÇÃO 4: OPERAÇÕES CRUD BÁSICAS${colors.reset}`)
 
   if (!testState.tokens.rh) {
     console.log(`${colors.red}❌ Token RH necessário para testes CRUD. Pulando.${colors.reset}`)
@@ -309,10 +353,13 @@ async function testarOperacoesCRUD() {
     },
     testState.tokens.rh,
   )
-  logResult("Criar Novo Grupo", novoGrupo, 201)
+  const sucessoGrupo = logResult("Criar Novo Grupo", novoGrupo, 201)
 
   // Se grupo foi criado, tentar atualizá-lo
-  if (novoGrupo.status === 201 && novoGrupo.data.id) {
+  if (sucessoGrupo && novoGrupo.data.id) {
+    // Salvar ID do grupo para uso posterior
+    testState.entidadesCriadas.grupos.push(novoGrupo.data.id)
+
     const atualizarGrupo = await makeRequest(
       "PUT",
       `${BASE_URL}/grupos/${novoGrupo.data.id}`,
@@ -338,7 +385,12 @@ async function testarOperacoesCRUD() {
       },
       testState.tokens.comum,
     )
-    logResult("Usuário - Criar Novo Evento", novoEvento, 201)
+    const sucessoEvento = logResult("Usuário - Criar Novo Evento", novoEvento, 201)
+
+    // Salvar ID do evento para uso posterior
+    if (sucessoEvento && novoEvento.data.id) {
+      testState.entidadesCriadas.eventos.push(novoEvento.data.id)
+    }
   }
 }
 
@@ -357,6 +409,32 @@ async function testarSeguranca() {
   // Token malformado
   const tokenMalformado = await makeRequest("GET", `${BASE_URL}/usuarios`, null, "Bearer token-malformado")
   logResult("Token malformado (deve falhar)", tokenMalformado, 401)
+
+  // Tentar acessar recurso de outro usuário
+  if (testState.tokens.comum && testState.usuarios.gestor) {
+    const acessoNaoAutorizado = await makeRequest(
+      "GET",
+      `${BASE_URL}/usuarios/${testState.usuarios.gestor.cpf}`,
+      null,
+      testState.tokens.comum,
+    )
+    logResult("Acessar Recurso de Outro Usuário (deve falhar)", acessoNaoAutorizado, 403)
+  }
+
+  // Tentar criar grupo com CNPJ inválido
+  if (testState.tokens.rh) {
+    const grupoInvalido = await makeRequest(
+      "POST",
+      `${BASE_URL}/grupos`,
+      {
+        nome: "Grupo Teste Inválido",
+        cnpj_empresa: "99999999999999", // CNPJ inválido
+        telefone: "(11) 1234-5678",
+      },
+      testState.tokens.rh,
+    )
+    logResult("Criar Grupo com CNPJ Inválido (deve falhar)", grupoInvalido, 400)
+  }
 }
 
 // Função para testar logout
@@ -371,6 +449,460 @@ async function testarLogout() {
     const aposLogout = await makeRequest("GET", `${BASE_URL}/auth/me`, null, testState.tokens.rh)
     logResult("Usar token após logout (deve falhar)", aposLogout, 401)
   }
+}
+
+// NOVA FUNÇÃO: Testar fluxo de aprovação de eventos
+async function testarAprovacaoEventos() {
+  console.log(`\n${colors.bright}🗓️ SEÇÃO 7: FLUXO DE APROVAÇÃO DE EVENTOS${colors.reset}`)
+
+  // Verificar se temos tokens necessários
+  if (!testState.tokens.comum || !testState.tokens.gestor) {
+    console.log(`${colors.red}❌ Tokens de usuário comum e gestor necessários. Pulando.${colors.reset}`)
+    return
+  }
+
+  // 1. Criar evento como usuário comum
+  const novoEvento = await makeRequest(
+    "POST",
+    `${BASE_URL}/eventos`,
+    {
+      cpf_usuario: testState.usuarios.comum?.cpf,
+      data_inicio: "2025-07-10",
+      data_fim: "2025-07-15",
+      id_tipo_ausencia: 1,
+      uf: "SP",
+    },
+    testState.tokens.comum,
+  )
+  const sucessoEvento = logResult("Criar Evento para Aprovação", novoEvento, 201)
+
+  if (sucessoEvento && novoEvento.data.id) {
+    const eventoId = novoEvento.data.id
+    testState.entidadesCriadas.eventos.push(eventoId)
+
+    // 2. Tentar aprovar como usuário comum (deve falhar)
+    const aprovarComum = await makeRequest(
+      "POST",
+      `${BASE_URL}/eventos/${eventoId}/aprovar`,
+      { aprovador_cpf: testState.usuarios.comum?.cpf },
+      testState.tokens.comum,
+    )
+    logResult("Aprovar Evento como Usuário Comum (deve falhar)", aprovarComum, 403)
+
+    // 3. Aprovar como gestor
+    const aprovarGestor = await makeRequest(
+      "POST",
+      `${BASE_URL}/eventos/${eventoId}/aprovar`,
+      { aprovador_cpf: testState.usuarios.gestor?.cpf },
+      testState.tokens.gestor,
+    )
+    logResult("Aprovar Evento como Gestor", aprovarGestor, 200)
+
+    // 4. Verificar status do evento
+    const verificarEvento = await makeRequest("GET", `${BASE_URL}/eventos/${eventoId}`, null, testState.tokens.gestor)
+    logResult("Verificar Status do Evento Aprovado", verificarEvento, 200)
+
+    // 5. Criar outro evento para rejeição
+    const eventoParaRejeitar = await makeRequest(
+      "POST",
+      `${BASE_URL}/eventos`,
+      {
+        cpf_usuario: testState.usuarios.comum?.cpf,
+        data_inicio: "2025-08-10",
+        data_fim: "2025-08-15",
+        id_tipo_ausencia: 1,
+        uf: "SP",
+      },
+      testState.tokens.comum,
+    )
+
+    if (eventoParaRejeitar.status === 201 && eventoParaRejeitar.data.id) {
+      const eventoRejeitadoId = eventoParaRejeitar.data.id
+      testState.entidadesCriadas.eventos.push(eventoRejeitadoId)
+
+      // 6. Rejeitar como gestor
+      const rejeitarGestor = await makeRequest(
+        "POST",
+        `${BASE_URL}/eventos/${eventoRejeitadoId}/rejeitar`,
+        { aprovador_cpf: testState.usuarios.gestor?.cpf },
+        testState.tokens.gestor,
+      )
+      logResult("Rejeitar Evento como Gestor", rejeitarGestor, 200)
+
+      // 7. Verificar status do evento rejeitado
+      const verificarRejeitado = await makeRequest(
+        "GET",
+        `${BASE_URL}/eventos/${eventoRejeitadoId}`,
+        null,
+        testState.tokens.gestor,
+      )
+      logResult("Verificar Status do Evento Rejeitado", verificarRejeitado, 200)
+    }
+  }
+}
+
+// NOVA FUNÇÃO: Testar criação de usuários com diferentes papéis
+async function testarCriacaoUsuarios() {
+  console.log(`\n${colors.bright}👥 SEÇÃO 8: CRIAÇÃO DE USUÁRIOS${colors.reset}`)
+
+  if (!testState.tokens.rh || !testState.tokens.gestor) {
+    console.log(`${colors.red}❌ Tokens de RH e gestor necessários. Pulando.${colors.reset}`)
+    return
+  }
+
+  // 1. Criar usuário comum como RH
+  const cpfUsuarioComum = Math.floor(10000000000 + Math.random() * 90000000000)
+  const novoUsuarioComum = await makeRequest(
+    "POST",
+    `${BASE_URL}/usuarios`,
+    {
+      cpf: cpfUsuarioComum,
+      nome: "Novo Usuário Comum",
+      email: `novo.comum.${Date.now()}@techsolutions.com`,
+      senha: "123456",
+      grupo_id: testState.usuarios.comum?.grupo_id,
+      inicio_na_empresa: "2025-01-01",
+      uf: "SP",
+      tipo_usuario: "comum",
+      flag_gestor: "N",
+    },
+    testState.tokens.rh,
+  )
+  const sucessoUsuarioComum = logResult("Criar Usuário Comum como RH", novoUsuarioComum, 201)
+
+  if (sucessoUsuarioComum) {
+    testState.entidadesCriadas.usuarios.push(cpfUsuarioComum)
+  }
+
+  // 2. Criar usuário gestor como RH
+  const cpfUsuarioGestor = Math.floor(10000000000 + Math.random() * 90000000000)
+  const novoUsuarioGestor = await makeRequest(
+    "POST",
+    `${BASE_URL}/usuarios`,
+    {
+      cpf: cpfUsuarioGestor,
+      nome: "Novo Usuário Gestor",
+      email: `novo.gestor.${Date.now()}@techsolutions.com`,
+      senha: "123456",
+      grupo_id: testState.usuarios.gestor?.grupo_id,
+      inicio_na_empresa: "2025-01-01",
+      uf: "SP",
+      tipo_usuario: "comum",
+      flag_gestor: "S",
+    },
+    testState.tokens.rh,
+  )
+  const sucessoUsuarioGestor = logResult("Criar Usuário Gestor como RH", novoUsuarioGestor, 201)
+
+  if (sucessoUsuarioGestor) {
+    testState.entidadesCriadas.usuarios.push(cpfUsuarioGestor)
+  }
+
+  // 3. Tentar criar usuário em grupo não autorizado
+  const grupoNaoAutorizado = testState.usuarios.gestor?.grupo_id === 1 ? 2 : 1
+  const cpfUsuarioInvalido = Math.floor(10000000000 + Math.random() * 90000000000)
+  const usuarioGrupoInvalido = await makeRequest(
+    "POST",
+    `${BASE_URL}/usuarios`,
+    {
+      cpf: cpfUsuarioInvalido,
+      nome: "Usuário Grupo Inválido",
+      email: `grupo.invalido.${Date.now()}@techsolutions.com`,
+      senha: "123456",
+      grupo_id: grupoNaoAutorizado,
+      inicio_na_empresa: "2025-01-01",
+      uf: "SP",
+    },
+    testState.tokens.gestor,
+  )
+  logResult("Criar Usuário em Grupo Não Autorizado (deve falhar)", usuarioGrupoInvalido, 403)
+
+  // 4. Tentar criar usuário com CPF inválido
+  const usuarioCpfInvalido = await makeRequest(
+    "POST",
+    `${BASE_URL}/usuarios`,
+    {
+      cpf: "123", // CPF inválido
+      nome: "Usuário CPF Inválido",
+      email: `cpf.invalido.${Date.now()}@techsolutions.com`,
+      senha: "123456",
+      grupo_id: testState.usuarios.rh?.grupo_id,
+      inicio_na_empresa: "2025-01-01",
+      uf: "SP",
+    },
+    testState.tokens.rh,
+  )
+  logResult("Criar Usuário com CPF Inválido (deve falhar)", usuarioCpfInvalido, 400)
+
+  // 5. Tentar criar usuário com email duplicado
+  if (sucessoUsuarioComum) {
+    const usuarioEmailDuplicado = await makeRequest(
+      "POST",
+      `${BASE_URL}/usuarios`,
+      {
+        cpf: Math.floor(10000000000 + Math.random() * 90000000000),
+        nome: "Usuário Email Duplicado",
+        email: novoUsuarioComum.data.email, // Email já usado
+        senha: "123456",
+        grupo_id: testState.usuarios.rh?.grupo_id,
+        inicio_na_empresa: "2025-01-01",
+        uf: "SP",
+      },
+      testState.tokens.rh,
+    )
+    logResult("Criar Usuário com Email Duplicado (deve falhar)", usuarioEmailDuplicado, 409)
+  }
+}
+
+// NOVA FUNÇÃO: Testar gerenciamento completo de grupos
+async function testarGerenciamentoGrupos() {
+  console.log(`\n${colors.bright}🏢 SEÇÃO 9: GERENCIAMENTO DE GRUPOS${colors.reset}`)
+
+  if (!testState.tokens.rh) {
+    console.log(`${colors.red}❌ Token RH necessário. Pulando.${colors.reset}`)
+    return
+  }
+
+  // 1. Obter CNPJ da empresa do RH
+  let cnpjEmpresaRH = "12345678000190"
+  if (testState.usuarios.rh && testState.usuarios.rh.grupo_id) {
+    const grupoRH = await makeRequest(
+      "GET",
+      `${BASE_URL}/grupos/${testState.usuarios.rh.grupo_id}`,
+      null,
+      testState.tokens.rh,
+    )
+    if (grupoRH.status === 200 && grupoRH.data.cnpj_empresa) {
+      cnpjEmpresaRH = grupoRH.data.cnpj_empresa
+    }
+  }
+
+  // 2. Criar grupo com dados inválidos
+  const grupoInvalido = await makeRequest(
+    "POST",
+    `${BASE_URL}/grupos`,
+    {
+      nome: "", // Nome vazio
+      cnpj_empresa: cnpjEmpresaRH,
+      telefone: "(11) 1234-5678",
+    },
+    testState.tokens.rh,
+  )
+  logResult("Criar Grupo com Dados Inválidos (deve falhar)", grupoInvalido, 400)
+
+  // 3. Criar grupo válido
+  const novoGrupo = await makeRequest(
+    "POST",
+    `${BASE_URL}/grupos`,
+    {
+      nome: `Grupo Teste Completo ${Date.now()}`,
+      cnpj_empresa: cnpjEmpresaRH,
+      telefone: "(11) 1234-5678",
+      descricao: "Grupo para teste completo",
+    },
+    testState.tokens.rh,
+  )
+  const sucessoGrupo = logResult("Criar Novo Grupo Válido", novoGrupo, 201)
+
+  if (sucessoGrupo && novoGrupo.data.id) {
+    const grupoId = novoGrupo.data.id
+    testState.entidadesCriadas.grupos.push(grupoId)
+
+    // 4. Atualizar grupo
+    const atualizarGrupo = await makeRequest(
+      "PUT",
+      `${BASE_URL}/grupos/${grupoId}`,
+      {
+        nome: "Grupo Atualizado",
+        descricao: "Descrição atualizada durante teste",
+      },
+      testState.tokens.rh,
+    )
+    logResult("Atualizar Grupo", atualizarGrupo, 200)
+
+    // 5. Tentar atualizar como gestor (deve falhar)
+    if (testState.tokens.gestor) {
+      const atualizarGestor = await makeRequest(
+        "PUT",
+        `${BASE_URL}/grupos/${grupoId}`,
+        {
+          descricao: "Tentativa de atualização por gestor",
+        },
+        testState.tokens.gestor,
+      )
+      logResult("Atualizar Grupo como Gestor (deve falhar)", atualizarGestor, 403)
+    }
+
+    // 6. Desativar grupo
+    const desativarGrupo = await makeRequest("DELETE", `${BASE_URL}/grupos/${grupoId}`, null, testState.tokens.rh)
+    logResult("Desativar Grupo", desativarGrupo, 200)
+
+    // 7. Verificar se grupo está desativado
+    const verificarGrupo = await makeRequest("GET", `${BASE_URL}/grupos/${grupoId}`, null, testState.tokens.rh)
+    logResult("Verificar Grupo Desativado", verificarGrupo, 200)
+  }
+}
+
+// NOVA FUNÇÃO: Testar validação de dados e casos de borda
+async function testarValidacaoDados() {
+  console.log(`\n${colors.bright}🔍 SEÇÃO 10: VALIDAÇÃO DE DADOS${colors.reset}`)
+
+  if (!testState.tokens.comum || !testState.tokens.rh) {
+    console.log(`${colors.red}❌ Tokens necessários. Pulando.${colors.reset}`)
+    return
+  }
+
+  // 1. Evento com data final anterior à data inicial
+  const eventoDataInvalida = await makeRequest(
+    "POST",
+    `${BASE_URL}/eventos`,
+    {
+      cpf_usuario: testState.usuarios.comum?.cpf,
+      data_inicio: "2025-07-15", // Data posterior à final
+      data_fim: "2025-07-10",
+      id_tipo_ausencia: 1,
+      uf: "SP",
+    },
+    testState.tokens.comum,
+  )
+  logResult("Criar Evento com Data Inválida (deve falhar)", eventoDataInvalida, 400)
+
+  // 2. Evento com tipo de ausência inexistente
+  const eventoTipoInexistente = await makeRequest(
+    "POST",
+    `${BASE_URL}/eventos`,
+    {
+      cpf_usuario: testState.usuarios.comum?.cpf,
+      data_inicio: "2025-07-10",
+      data_fim: "2025-07-15",
+      id_tipo_ausencia: 9999, // Tipo inexistente
+      uf: "SP",
+    },
+    testState.tokens.comum,
+  )
+  logResult("Criar Evento com Tipo Inexistente (deve falhar)", eventoTipoInexistente, 400)
+
+  // 3. Usuário com UF inválida
+  const cpfUsuarioUfInvalida = Math.floor(10000000000 + Math.random() * 90000000000)
+  const usuarioUfInvalida = await makeRequest(
+    "POST",
+    `${BASE_URL}/usuarios`,
+    {
+      cpf: cpfUsuarioUfInvalida,
+      nome: "Usuário UF Inválida",
+      email: `uf.invalida.${Date.now()}@techsolutions.com`,
+      senha: "123456",
+      grupo_id: testState.usuarios.rh?.grupo_id,
+      inicio_na_empresa: "2025-01-01",
+      uf: "XX", // UF inválida
+    },
+    testState.tokens.rh,
+  )
+  logResult("Criar Usuário com UF Inválida (deve falhar)", usuarioUfInvalida, 400)
+
+  // 4. Grupo sem telefone (campo obrigatório)
+  let cnpjEmpresaRH = "12345678000190"
+  if (testState.usuarios.rh && testState.usuarios.rh.grupo_id) {
+    const grupoRH = await makeRequest(
+      "GET",
+      `${BASE_URL}/grupos/${testState.usuarios.rh.grupo_id}`,
+      null,
+      testState.tokens.rh,
+    )
+    if (grupoRH.status === 200 && grupoRH.data.cnpj_empresa) {
+      cnpjEmpresaRH = grupoRH.data.cnpj_empresa
+    }
+  }
+
+  const grupoSemTelefone = await makeRequest(
+    "POST",
+    `${BASE_URL}/grupos`,
+    {
+      nome: `Grupo Sem Telefone ${Date.now()}`,
+      cnpj_empresa: cnpjEmpresaRH,
+      // Telefone omitido
+    },
+    testState.tokens.rh,
+  )
+  logResult("Criar Grupo Sem Telefone (deve falhar)", grupoSemTelefone, 400)
+}
+
+// NOVA FUNÇÃO: Testar calendário e visualizações
+async function testarCalendario() {
+  console.log(`\n${colors.bright}📅 SEÇÃO 11: CALENDÁRIO E VISUALIZAÇÕES${colors.reset}`)
+
+  if (!testState.tokens.rh || !testState.tokens.gestor || !testState.tokens.comum) {
+    console.log(`${colors.red}❌ Tokens necessários. Pulando.${colors.reset}`)
+    return
+  }
+
+  // 1. Calendário geral (RH)
+  const calendarioRH = await makeRequest("GET", `${BASE_URL}/calendario`, null, testState.tokens.rh)
+  logResult("Calendário Geral (RH)", calendarioRH, 200)
+
+  // 2. Calendário com filtro de data
+  const dataInicio = new Date()
+  const dataFim = new Date()
+  dataFim.setMonth(dataFim.getMonth() + 3) // 3 meses à frente
+
+  const calendarioFiltrado = await makeRequest(
+    "GET",
+    `${BASE_URL}/calendario?inicio=${dataInicio.toISOString().split("T")[0]}&fim=${dataFim.toISOString().split("T")[0]}`,
+    null,
+    testState.tokens.rh,
+  )
+  logResult("Calendário com Filtro de Data", calendarioFiltrado, 200)
+
+  // 3. Calendário de grupo específico
+  if (testState.usuarios.gestor && testState.usuarios.gestor.grupo_id) {
+    const calendarioGrupo = await makeRequest(
+      "GET",
+      `${BASE_URL}/calendario/grupo/${testState.usuarios.gestor.grupo_id}`,
+      null,
+      testState.tokens.gestor,
+    )
+    logResult("Calendário de Grupo Específico", calendarioGrupo, 200)
+  }
+
+  // 4. Calendário com filtro de tipo de ausência
+  const calendarioTipoAusencia = await makeRequest(
+    "GET",
+    `${BASE_URL}/calendario?tipo_ausencia=1`,
+    null,
+    testState.tokens.rh,
+  )
+  logResult("Calendário com Filtro de Tipo de Ausência", calendarioTipoAusencia, 200)
+
+  // 5. Usuário comum só deve ver eventos do seu grupo
+  const calendarioUsuarioComum = await makeRequest("GET", `${BASE_URL}/calendario`, null, testState.tokens.comum)
+  logResult("Calendário para Usuário Comum", calendarioUsuarioComum, 200)
+}
+
+// Função para limpar dados de teste
+async function limparDadosTeste() {
+  console.log(`\n${colors.bright}🧹 LIMPEZA DE DADOS DE TESTE${colors.reset}`)
+
+  if (!testState.tokens.rh) {
+    console.log(`${colors.red}❌ Token RH necessário para limpeza. Pulando.${colors.reset}`)
+    return
+  }
+
+  // Limpar eventos criados
+  for (const eventoId of testState.entidadesCriadas.eventos) {
+    const deletarEvento = await makeRequest("DELETE", `${BASE_URL}/eventos/${eventoId}`, null, testState.tokens.rh)
+    logResult(`Deletar Evento ID ${eventoId}`, deletarEvento, 200)
+  }
+
+  // Limpar usuários criados
+  for (const cpfUsuario of testState.entidadesCriadas.usuarios) {
+    const deletarUsuario = await makeRequest("DELETE", `${BASE_URL}/usuarios/${cpfUsuario}`, null, testState.tokens.rh)
+    logResult(`Deletar Usuário CPF ${cpfUsuario}`, deletarUsuario, 200)
+  }
+
+  // Limpar grupos criados (já foram desativados nos testes)
+  console.log(
+    `${colors.green}✅ ${testState.entidadesCriadas.grupos.length} grupos foram desativados durante os testes${colors.reset}`,
+  )
 }
 
 // Função para gerar relatório final
@@ -390,6 +922,11 @@ function gerarRelatorio() {
   Object.keys(testState.tokens).forEach((tipo) => {
     console.log(`${colors.green}✅ ${tipo.toUpperCase()}: ${testState.tokens[tipo] ? "OK" : "FALHOU"}${colors.reset}`)
   })
+
+  console.log(`\n${colors.bright}📈 ESTATÍSTICAS DE ENTIDADES:${colors.reset}`)
+  console.log(`${colors.blue}🗓️ Eventos testados: ${testState.entidadesCriadas.eventos.length}${colors.reset}`)
+  console.log(`${colors.blue}👤 Usuários testados: ${testState.entidadesCriadas.usuarios.length}${colors.reset}`)
+  console.log(`${colors.blue}🏢 Grupos testados: ${testState.entidadesCriadas.grupos.length}${colors.reset}`)
 
   console.log(`\n${colors.bright}💡 DIAGNÓSTICO:${colors.reset}`)
   if (porcentagemSucesso >= 90) {
@@ -416,7 +953,7 @@ function gerarRelatorio() {
 
 // Função principal
 async function executarTestes() {
-  console.log(`${colors.bright}🚀 TESTE COMPLETO DA API - VERSÃO 3.0${colors.reset}`)
+  console.log(`${colors.bright}🚀 TESTE COMPLETO DA API - VERSÃO 4.0${colors.reset}`)
   console.log(`${colors.blue}📅 ${new Date().toLocaleString("pt-BR")}${colors.reset}`)
   console.log(`${colors.blue}🔗 Base URL: ${BASE_URL}${colors.reset}\n`)
 
@@ -434,6 +971,18 @@ async function executarTestes() {
     await testarEndpointsProtegidos()
     await testarOperacoesCRUD()
     await testarSeguranca()
+
+    // Novas seções de teste
+    await testarAprovacaoEventos()
+    await testarCriacaoUsuarios()
+    await testarGerenciamentoGrupos()
+    await testarValidacaoDados()
+    await testarCalendario()
+
+    // Limpar dados de teste
+    await limparDadosTeste()
+
+    // Testar logout por último
     await testarLogout()
 
     // Gerar relatório final

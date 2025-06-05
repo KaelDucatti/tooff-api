@@ -74,6 +74,12 @@ def criar():
     dados: Dict[str, Any] = request.get_json(force=True)
     
     try:
+        # Validação de entrada usando o módulo de validação
+        from ..validation.input_validator import validar_evento_input
+        erros_validacao = validar_evento_input(dados)
+        if erros_validacao:
+            return jsonify({"erro": erros_validacao[0]}), 400
+        
         usuario_cpf = extrair_usuario_cpf_do_token()
         if not usuario_cpf:
             return jsonify({"erro": "Token de autenticação necessário"}), 401
@@ -93,6 +99,23 @@ def criar():
         # Para eventos criados por usuários comuns, o aprovador inicial é o próprio usuário
         # (será alterado quando aprovado por gestor/RH)
         aprovado_por = dados.get("aprovado_por", usuario_cpf)
+        
+        # Validação de datas
+        from datetime import datetime
+        try:
+            data_inicio_obj = datetime.fromisoformat(dados["data_inicio"])
+            data_fim_obj = datetime.fromisoformat(dados["data_fim"])
+            
+            if data_inicio_obj > data_fim_obj:
+                return jsonify({"erro": "Data de início não pode ser posterior à data de fim"}), 400
+                
+        except ValueError:
+            return jsonify({"erro": "Formato de data inválido. Use YYYY-MM-DD"}), 400
+        
+        # Validação de tipo de ausência
+        from ..database.crud import obter_tipo_ausencia
+        if not obter_tipo_ausencia(dados["id_tipo_ausencia"]):
+            return jsonify({"erro": "Tipo de ausência inválido"}), 400
         
         evento = criar_evento(
             cpf_usuario=cpf_usuario,
@@ -118,6 +141,26 @@ def atualizar(evento_id: int):
     dados: Dict[str, Any] = request.get_json(force=True)
     
     try:
+        # Validação opcional para atualização (apenas campos presentes)
+        if dados:
+            from ..validation.input_validator import validar_data
+            # Validar datas se fornecidas
+            if 'data_inicio' in dados and not validar_data(dados['data_inicio']):
+                return jsonify({"erro": "Data de início inválida"}), 400
+            if 'data_fim' in dados and not validar_data(dados['data_fim']):
+                return jsonify({"erro": "Data de fim inválida"}), 400
+            
+            # Validar ordem das datas se ambas fornecidas
+            if 'data_inicio' in dados and 'data_fim' in dados:
+                from datetime import datetime
+                try:
+                    inicio = datetime.strptime(dados['data_inicio'], "%Y-%m-%d")
+                    fim = datetime.strptime(dados['data_fim'], "%Y-%m-%d")
+                    if inicio > fim:
+                        return jsonify({"erro": "Data de início não pode ser posterior à data de fim"}), 400
+                except ValueError:
+                    return jsonify({"erro": "Formato de data inválido"}), 400
+        
         usuario_cpf = extrair_usuario_cpf_do_token()
         if not usuario_cpf:
             return jsonify({"erro": "Token de autenticação necessário"}), 401
@@ -197,7 +240,8 @@ def aprovar(evento_id: int):
             return jsonify({"erro": "Evento não encontrado"}), 404
         
         # Verifica permissão para aprovar
-        if aprovador.tipo_usuario not in [TipoUsuario.RH] and aprovador.flag_gestor != FlagGestor.SIM:
+        if (aprovador.tipo_usuario not in [TipoUsuario.RH.value] and 
+            aprovador.flag_gestor != FlagGestor.SIM.value):
             return jsonify({"erro": "Sem permissão para aprovar eventos"}), 403
         
         # Verifica se o aprovador pode aprovar eventos deste usuário
@@ -235,7 +279,8 @@ def rejeitar(evento_id: int):
             return jsonify({"erro": "Evento não encontrado"}), 404
         
         # Verifica permissão para rejeitar
-        if aprovador.tipo_usuario not in [TipoUsuario.RH] and aprovador.flag_gestor != FlagGestor.SIM:
+        if (aprovador.tipo_usuario not in [TipoUsuario.RH.value] and 
+            aprovador.flag_gestor != FlagGestor.SIM.value):
             return jsonify({"erro": "Sem permissão para rejeitar eventos"}), 403
         
         # Verifica se o aprovador pode rejeitar eventos deste usuário
