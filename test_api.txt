@@ -3,7 +3,7 @@
 [33m🔧 Para desativar debug, mude debugMode para false[0m
 
 [1m🚀 TESTE COMPLETO DA API - VERSÃO 3.0[0m
-[34m📅 04/06/2025, 21:43:42[0m
+[34m📅 04/06/2025, 22:40:14[0m
 [34m🔗 Base URL: http://localhost:5000/api[0m
 
 [1m🔍 VERIFICANDO SERVIDOR[0m
@@ -127,7 +127,7 @@
 
 [36m=== RH - Listar Grupos ===[0m
 ✅ Status: [32m200[0m
-[33m📋 Array com 3 itens[0m
+[33m📋 Array com 4 itens[0m
 [33m📄 Primeiro item: {
   "ativo": true,
   "cnpj_empresa": 12345678000190,
@@ -195,7 +195,7 @@
 [34m🏢 CNPJ da empresa do RH: 12345678000190[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "nome": "Grupo Teste 1749084256389",
+  "nome": "Grupo Teste 1749087648587",
   "cnpj_empresa": 12345678000190,
   "telefone": "(11) 1234-5678",
   "descricao": "Grupo criado durante teste automatizado"
@@ -210,8 +210,8 @@
   "criado_em": "2025-06-04",
   "descricao": "Grupo criado durante teste automatizado",
   "empresa_nome": "Tech Solutions LTDA",
-  "id": 5,
-  "nome": "Grupo Teste 1749084256389",
+  "id": 6,
+  "nome": "Grupo Teste 1749087648587",
   "telefone": "(11) 1234-5678",
   "total_usuarios": 0
 }[0m
@@ -219,7 +219,7 @@
 [34m📤 Dados enviados: {
   "descricao": "Grupo atualizado durante teste"
 }[0m
-[36m🌐 PUT http://localhost:5000/api/grupos/5[0m
+[36m🌐 PUT http://localhost:5000/api/grupos/6[0m
 
 [36m=== Atualizar Grupo Criado ===[0m
 ✅ Status: [32m200[0m
@@ -243,10 +243,10 @@
   "aprovado_por": 34567890123,
   "aprovado_por_nome": "Ana Costa",
   "cpf_usuario": 34567890123,
-  "criado_em": "2025-06-05T00:44:26",
+  "criado_em": "2025-06-05T01:40:58",
   "data_fim": "2025-06-19",
   "data_inicio": "2025-06-15",
-  "id": 6,
+  "id": 7,
   "id_tipo_ausencia": 1,
   "status": "pendente",
   "tipo_ausencia_desc": "Féria...[0m

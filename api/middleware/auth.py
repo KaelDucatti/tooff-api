@@ -2,7 +2,6 @@ from functools import wraps
 from flask import request, jsonify, current_app, g
 from typing import Optional, Dict, Any, Callable
 import jwt
-import time
 
 from ..database.crud import obter_usuario, obter_grupo, obter_evento
 from ..database.models import TipoUsuario, FlagGestor

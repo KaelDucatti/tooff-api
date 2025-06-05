@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify
-from ..database.crud import listar_ufs, obter_uf, criar_uf
+from ..database.crud import listar_ufs, obter_uf
 
 ufs_bp = Blueprint('ufs', __name__)
 

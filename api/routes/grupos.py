@@ -7,7 +7,7 @@ from ..database.crud import (
 )
 from ..middleware.auth import (
     jwt_required, requer_permissao_grupo, filtrar_por_escopo_usuario,
-    extrair_usuario_cpf_do_token, verificar_permissao_empresa
+    extrair_usuario_cpf_do_token
 )
 
 grupos_bp = Blueprint('grupos', __name__)
