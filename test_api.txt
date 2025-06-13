@@ -3,7 +3,7 @@
 [33m🔧 Para desativar debug, mude debugMode para false[0m
 
 [1m🚀 TESTE COMPLETO DA API - VERSÃO 4.0[0m
-[34m📅 05/06/2025, 17:35:57[0m
+[34m📅 13/06/2025, 18:34:54[0m
 [34m🔗 Base URL: http://localhost:5000/api[0m
 
 [1m🔍 VERIFICANDO SERVIDOR[0m
@@ -148,7 +148,7 @@
 
 [36m=== RH - Listar Grupos ===[0m
 ✅ Status: [32m200[0m
-[33m📋 Array com 13 itens[0m
+[33m📋 Array com 14 itens[0m
 [33m📄 Primeiro item: {
   "ativo": true,
   "cnpj_empresa": 12345678000190,
@@ -156,13 +156,15 @@
   "descricao": "Eq...[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [36m🌐 GET http://localhost:5000/api/empresas[0m
-[31m❌ Erro na requisição: fetch failed[0m
 
 [36m=== RH - Listar Empresas ===[0m
-❌ Status: [31mERROR[0m
-[33m📄 Response: {
-  "erro": "fetch failed"
-}[0m
+✅ Status: [32m200[0m
+[33m📋 Array com 1 itens[0m
+[33m📄 Primeiro item: {
+  "ativa": true,
+  "cnpj": 12345678000190,
+  "criado_em": "2025-06-04",
+  "email": "contato@techso...[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [36m🌐 GET http://localhost:5000/api/calendario[0m
 
@@ -250,7 +252,7 @@
 [34m🏢 CNPJ da empresa do RH: 12345678000190[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "nome": "Grupo Teste 1749155849514",
+  "nome": "Grupo Teste 1749850579657",
   "cnpj_empresa": 12345678000190,
   "telefone": "(11) 1234-5678",
   "descricao": "Grupo criado durante teste automatizado"
@@ -262,11 +264,11 @@
 [33m📄 Response: {
   "ativo": true,
   "cnpj_empresa": 12345678000190,
-  "criado_em": "2025-06-05",
+  "criado_em": "2025-06-13",
   "descricao": "Grupo criado durante teste automatizado",
   "empresa_nome": "Tech Solutions LTDA",
-  "id": 22,
-  "nome": "Grupo Teste 1749155849514",
+  "id": 24,
+  "nome": "Grupo Teste 1749850579657",
   "telefone": "(11) 1234-5678",
   "total_usuarios": 0
 }[0m
@@ -274,7 +276,7 @@
 [34m📤 Dados enviados: {
   "descricao": "Grupo atualizado durante teste"
 }[0m
-[36m🌐 PUT http://localhost:5000/api/grupos/22[0m
+[36m🌐 PUT http://localhost:5000/api/grupos/24[0m
 
 [36m=== Atualizar Grupo Criado ===[0m
 ✅ Status: [32m200[0m
@@ -298,10 +300,10 @@
   "aprovado_por": 34567890123,
   "aprovado_por_nome": "Ana Costa",
   "cpf_usuario": 34567890123,
-  "criado_em": "2025-06-05T20:37:40",
+  "criado_em": "2025-06-13T21:36:30",
   "data_fim": "2025-06-19",
   "data_inicio": "2025-06-15",
-  "id": 32,
+  "id": 35,
   "id_tipo_ausencia": 1,
   "status": "pendente",
   "tipo_ausencia_desc": "Féri...[0m
@@ -370,10 +372,10 @@
   "aprovado_por": 34567890123,
   "aprovado_por_nome": "Ana Costa",
   "cpf_usuario": 34567890123,
-  "criado_em": "2025-06-05T20:37:46",
+  "criado_em": "2025-06-13T21:36:36",
   "data_fim": "2025-07-15",
   "data_inicio": "2025-07-10",
-  "id": 33,
+  "id": 36,
   "id_tipo_ausencia": 1,
   "status": "pendente",
   "tipo_ausencia_desc": "Féri...[0m
@@ -381,7 +383,7 @@
 [34m📤 Dados enviados: {
   "aprovador_cpf": 34567890123
 }[0m
-[36m🌐 POST http://localhost:5000/api/eventos/33/aprovar[0m
+[36m🌐 POST http://localhost:5000/api/eventos/36/aprovar[0m
 
 [36m=== Aprovar Evento como Usuário Comum (deve falhar) ===[0m
 ✅ Status: [32m403[0m
@@ -392,7 +394,7 @@
 [34m📤 Dados enviados: {
   "aprovador_cpf": 23456789012
 }[0m
-[36m🌐 POST http://localhost:5000/api/eventos/33/aprovar[0m
+[36m🌐 POST http://localhost:5000/api/eventos/36/aprovar[0m
 
 [36m=== Aprovar Evento como Gestor ===[0m
 ✅ Status: [32m200[0m
@@ -400,7 +402,7 @@
   "status": "Evento aprovado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 GET http://localhost:5000/api/eventos/33[0m
+[36m🌐 GET http://localhost:5000/api/eventos/36[0m
 
 [36m=== Verificar Status do Evento Aprovado ===[0m
 ✅ Status: [32m200[0m
@@ -409,10 +411,10 @@
   "aprovado_por": 23456789012,
   "aprovado_por_nome": "João Santos",
   "cpf_usuario": 34567890123,
-  "criado_em": "2025-06-05T20:37:46",
+  "criado_em": "2025-06-13T21:36:36",
   "data_fim": "2025-07-15",
   "data_inicio": "2025-07-10",
-  "id": 33,
+  "id": 36,
   "id_tipo_ausencia": 1,
   "status": "aprovado",
   "tipo_ausencia_desc": "Fé...[0m
@@ -429,7 +431,7 @@
 [34m📤 Dados enviados: {
   "aprovador_cpf": 23456789012
 }[0m
-[36m🌐 POST http://localhost:5000/api/eventos/34/rejeitar[0m
+[36m🌐 POST http://localhost:5000/api/eventos/37/rejeitar[0m
 
 [36m=== Rejeitar Evento como Gestor ===[0m
 ✅ Status: [32m200[0m
@@ -437,7 +439,7 @@
   "status": "Evento rejeitado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 GET http://localhost:5000/api/eventos/34[0m
+[36m🌐 GET http://localhost:5000/api/eventos/37[0m
 
 [36m=== Verificar Status do Evento Rejeitado ===[0m
 ✅ Status: [32m200[0m
@@ -446,10 +448,10 @@
   "aprovado_por": 23456789012,
   "aprovado_por_nome": "João Santos",
   "cpf_usuario": 34567890123,
-  "criado_em": "2025-06-05T20:38:03",
+  "criado_em": "2025-06-13T21:36:53",
   "data_fim": "2025-08-15",
   "data_inicio": "2025-08-10",
-  "id": 34,
+  "id": 37,
   "id_tipo_ausencia": 1,
   "status": "rejeitado",
   "tipo_ausencia_desc": "F...[0m
@@ -457,9 +459,9 @@
 [1m👥 SEÇÃO 8: CRIAÇÃO DE USUÁRIOS[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "cpf": 84291155310,
+  "cpf": 65045201197,
   "nome": "Novo Usuário Comum",
-  "email": "novo.comum.1749155894291@techsolutions.com",
+  "email": "novo.comum.1749850624573@techsolutions.com",
   "senha": "123456",
   "grupo_id": 3,
   "inicio_na_empresa": "2025-01-01",
@@ -474,9 +476,9 @@
 [33m📄 Response: {
   "UF": "SP",
   "ativo": true,
-  "cpf": 84291155310,
-  "criado_em": "2025-06-05T20:38:18",
-  "email": "novo.comum.1749155894291@techsolutions.com",
+  "cpf": 65045201197,
+  "criado_em": "2025-06-13T21:37:08",
+  "email": "novo.comum.1749850624573@techsolutions.com",
   "flag_gestor": "N",
   "grupo_id": 3,
   "grupo_nome": "Desenvolvimento",
@@ -485,9 +487,9 @@
   "tipo...[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "cpf": 81030136951,
+  "cpf": 60882106608,
   "nome": "Novo Usuário Gestor",
-  "email": "novo.gestor.1749155899477@techsolutions.com",
+  "email": "novo.gestor.1749850630156@techsolutions.com",
   "senha": "123456",
   "grupo_id": 3,
   "inicio_na_empresa": "2025-01-01",
@@ -502,9 +504,9 @@
 [33m📄 Response: {
   "UF": "SP",
   "ativo": true,
-  "cpf": 81030136951,
-  "criado_em": "2025-06-05T20:38:23",
-  "email": "novo.gestor.1749155899477@techsolutions.com",
+  "cpf": 60882106608,
+  "criado_em": "2025-06-13T21:37:14",
+  "email": "novo.gestor.1749850630156@techsolutions.com",
   "flag_gestor": "S",
   "grupo_id": 3,
   "grupo_nome": "Desenvolvimento",
@@ -513,9 +515,9 @@
   "ti...[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "cpf": 86661329110,
+  "cpf": 11938668894,
   "nome": "Usuário Grupo Inválido",
-  "email": "grupo.invalido.1749155904639@techsolutions.com",
+  "email": "grupo.invalido.1749850635904@techsolutions.com",
   "senha": "123456",
   "grupo_id": 1,
   "inicio_na_empresa": "2025-01-01",
@@ -532,7 +534,7 @@
 [34m📤 Dados enviados: {
   "cpf": "123",
   "nome": "Usuário CPF Inválido",
-  "email": "cpf.invalido.1749155906442@techsolutions.com",
+  "email": "cpf.invalido.1749850637733@techsolutions.com",
   "senha": "123456",
   "grupo_id": 2,
   "inicio_na_empresa": "2025-01-01",
@@ -547,9 +549,9 @@
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "cpf": 45888755501,
+  "cpf": 44169840311,
   "nome": "Usuário Email Duplicado",
-  "email": "novo.comum.1749155894291@techsolutions.com",
+  "email": "novo.comum.1749850624573@techsolutions.com",
   "senha": "123456",
   "grupo_id": 2,
   "inicio_na_empresa": "2025-01-01",
@@ -581,7 +583,7 @@
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "nome": "Grupo Teste Completo 1749155915144",
+  "nome": "Grupo Teste Completo 1749850646421",
   "cnpj_empresa": 12345678000190,
   "telefone": "(11) 1234-5678",
   "descricao": "Grupo para teste completo"
@@ -593,11 +595,11 @@
 [33m📄 Response: {
   "ativo": true,
   "cnpj_empresa": 12345678000190,
-  "criado_em": "2025-06-05",
+  "criado_em": "2025-06-13",
   "descricao": "Grupo para teste completo",
   "empresa_nome": "Tech Solutions LTDA",
-  "id": 23,
-  "nome": "Grupo Teste Completo 1749155915144",
+  "id": 25,
+  "nome": "Grupo Teste Completo 1749850646421",
   "telefone": "(11) 1234-5678",
   "total_usuarios": 0
 }[0m
@@ -606,7 +608,7 @@
   "nome": "Grupo Atualizado",
   "descricao": "Descrição atualizada durante teste"
 }[0m
-[36m🌐 PUT http://localhost:5000/api/grupos/23[0m
+[36m🌐 PUT http://localhost:5000/api/grupos/25[0m
 
 [36m=== Atualizar Grupo ===[0m
 ✅ Status: [32m200[0m
@@ -617,7 +619,7 @@
 [34m📤 Dados enviados: {
   "descricao": "Tentativa de atualização por gestor"
 }[0m
-[36m🌐 PUT http://localhost:5000/api/grupos/23[0m
+[36m🌐 PUT http://localhost:5000/api/grupos/25[0m
 
 [36m=== Atualizar Grupo como Gestor (deve falhar) ===[0m
 ✅ Status: [32m403[0m
@@ -625,7 +627,7 @@
   "erro": "Sem permissão para acessar dados deste grupo"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 DELETE http://localhost:5000/api/grupos/23[0m
+[36m🌐 DELETE http://localhost:5000/api/grupos/25[0m
 
 [36m=== Desativar Grupo ===[0m
 ✅ Status: [32m200[0m
@@ -633,17 +635,17 @@
   "status": "Grupo desativado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 GET http://localhost:5000/api/grupos/23[0m
+[36m🌐 GET http://localhost:5000/api/grupos/25[0m
 
 [36m=== Verificar Grupo Desativado ===[0m
 ✅ Status: [32m200[0m
 [33m📄 Response: {
   "ativo": false,
   "cnpj_empresa": 12345678000190,
-  "criado_em": "2025-06-05",
+  "criado_em": "2025-06-13",
   "descricao": "Descrição atualizada durante teste",
   "empresa_nome": "Tech Solutions LTDA",
-  "id": 23,
+  "id": 25,
   "nome": "Grupo Atualizado",
   "telefone": "(11) 1234-5678",
   "total_usuarios": 0
@@ -682,9 +684,9 @@
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "cpf": 21587235352,
+  "cpf": 75807964636,
   "nome": "Usuário UF Inválida",
-  "email": "uf.invalida.1749155934623@techsolutions.com",
+  "email": "uf.invalida.1749850665951@techsolutions.com",
   "senha": "123456",
   "grupo_id": 2,
   "inicio_na_empresa": "2025-01-01",
@@ -701,7 +703,7 @@
 [36m🌐 GET http://localhost:5000/api/grupos/2[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
 [34m📤 Dados enviados: {
-  "nome": "Grupo Sem Telefone 1749155939072",
+  "nome": "Grupo Sem Telefone 1749850670327",
   "cnpj_empresa": 12345678000190
 }[0m
 [36m🌐 POST http://localhost:5000/api/grupos[0m
@@ -725,7 +727,7 @@
   "end": "2025-07-16",
   "extendedProp...[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 GET http://localhost:5000/api/calendario?inicio=2025-06-05&fim=2025-09-05[0m
+[36m🌐 GET http://localhost:5000/api/calendario?inicio=2025-06-13&fim=2025-09-13[0m
 
 [36m=== Calendário com Filtro de Data ===[0m
 ✅ Status: [32m200[0m
@@ -777,41 +779,41 @@
 
 [1m🧹 LIMPEZA DE DADOS DE TESTE[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 DELETE http://localhost:5000/api/eventos/32[0m
+[36m🌐 DELETE http://localhost:5000/api/eventos/35[0m
 
-[36m=== Deletar Evento ID 32 ===[0m
+[36m=== Deletar Evento ID 35 ===[0m
 ✅ Status: [32m200[0m
 [33m📄 Response: {
   "status": "Evento deletado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 DELETE http://localhost:5000/api/eventos/33[0m
+[36m🌐 DELETE http://localhost:5000/api/eventos/36[0m
 
-[36m=== Deletar Evento ID 33 ===[0m
+[36m=== Deletar Evento ID 36 ===[0m
 ✅ Status: [32m200[0m
 [33m📄 Response: {
   "status": "Evento deletado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 DELETE http://localhost:5000/api/eventos/34[0m
+[36m🌐 DELETE http://localhost:5000/api/eventos/37[0m
 
-[36m=== Deletar Evento ID 34 ===[0m
+[36m=== Deletar Evento ID 37 ===[0m
 ✅ Status: [32m200[0m
 [33m📄 Response: {
   "status": "Evento deletado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 DELETE http://localhost:5000/api/usuarios/84291155310[0m
+[36m🌐 DELETE http://localhost:5000/api/usuarios/65045201197[0m
 
-[36m=== Deletar Usuário CPF 84291155310 ===[0m
+[36m=== Deletar Usuário CPF 65045201197 ===[0m
 ✅ Status: [32m200[0m
 [33m📄 Response: {
   "status": "Usuário desativado"
 }[0m
 [33m🔑 Token usado: eyJhbGciOiJIUzI1NiIs...[0m
-[36m🌐 DELETE http://localhost:5000/api/usuarios/81030136951[0m
+[36m🌐 DELETE http://localhost:5000/api/usuarios/60882106608[0m
 
-[36m=== Deletar Usuário CPF 81030136951 ===[0m
+[36m=== Deletar Usuário CPF 60882106608 ===[0m
 ✅ Status: [32m200[0m
 [33m📄 Response: {
   "status": "Usuário desativado"
@@ -839,9 +841,9 @@
 [1m📊 RELATÓRIO FINAL[0m
 ============================================================
 [1mTotal de Testes:[0m 61
-[32mTestes Passaram:[0m 58
-[31mTestes Falharam:[0m 3
-[1mTaxa de Sucesso:[0m [32m95.1%[0m
+[32mTestes Passaram:[0m 59
+[31mTestes Falharam:[0m 2
+[1mTaxa de Sucesso:[0m [32m96.7%[0m
 
 [1m🔑 TOKENS OBTIDOS:[0m
 [32m✅ RH: OK[0m

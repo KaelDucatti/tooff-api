@@ -1,6 +1,6 @@
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
-from sqlalchemy import select, and_, func, extract
+from sqlalchemy import select, and_, func
 
 from .models import (
     get_session, Usuario, Empresa, Grupo, Evento, UF,
