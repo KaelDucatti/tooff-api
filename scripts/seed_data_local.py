@@ -5,11 +5,6 @@ import sys
 from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy.exc import IntegrityError
-from api.database.models import init_db, TipoUsuario, FlagGestor
-from api.database.crud import (
-    criar_uf, criar_empresa, criar_grupo, criar_usuario, criar_evento,
-    criar_tipo_ausencia, criar_turno, criar_feriado_nacional
-)
 
 # Carrega variáveis de ambiente
 load_dotenv()
@@ -18,6 +13,11 @@ load_dotenv()
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
+from api.database.models import init_db, TipoUsuario, FlagGestor  # Fixed: removed relative import
+from api.database.crud import (
+    criar_uf, criar_empresa, criar_grupo, criar_usuario, criar_evento,
+    criar_tipo_ausencia, criar_turno, criar_feriado_nacional, get_session  # Added get_session
+)
 
 def seed_database():
     """Popula o banco SQLite local com dados de exemplo"""
@@ -67,7 +67,7 @@ def seed_database():
         turnos = ["Dia", "Noite", "Madrugada"]
         for turno_desc in turnos:
             try:
-                criar_turno(turno_desc)
+                criar_turno(descricao_turno=turno_desc)  # Fixed: use correct parameter name
             except IntegrityError:
                 pass  # Turno já existe
         
@@ -147,21 +147,23 @@ def seed_database():
         # 7. Criar eventos de exemplo
         print("📅 Criando eventos...")
         if tipos_criados:
-            evento = criar_evento(
-                cpf_usuario=dev1.cpf,
-                data_inicio="2024-12-15",
-                data_fim="2024-12-19",
-                id_tipo_ausencia=tipos_criados[0].id_tipo_ausencia,  # Férias
-                uf="SP",
-                aprovado_por=gestor_dev.cpf
-            )
-            print(f"✅ Evento criado: ID {evento.id}")
+            with get_session() as session:  # Fixed: Added session context
+                evento = criar_evento(
+                    cpf_usuario=dev1.cpf,
+                    data_inicio="2024-12-15",
+                    data_fim="2024-12-19",
+                    id_tipo_ausencia=tipos_criados[0].id_tipo_ausencia,  # Férias
+                    uf="SP",
+                    aprovado_por=gestor_dev.cpf,
+                    session=session  # Fixed: Added session parameter
+                )
+                print(f"✅ Evento criado: ID {evento.id}")
         
         # 8. Criar alguns feriados
         print("🎉 Criando feriados...")
         try:
-            criar_feriado_nacional("2024-01-01", "SP", "Confraternização Universal")
-            criar_feriado_nacional("2024-04-21", "SP", "Tiradentes")
+            criar_feriado_nacional("2024-01-01", "Confraternização Universal", "SP")
+            criar_feriado_nacional("2024-04-21", "Tiradentes", "SP")
         except IntegrityError:
             pass  # Feriados já existem
         

@@ -7,6 +7,7 @@ Inclui: tipos de ausência, turnos, feriados e eventos de exemplo
 import os
 import sys
 import logging
+from datetime import datetime, date, timedelta
 from dotenv import load_dotenv
 
 # Adiciona o diretório raiz ao path
@@ -18,6 +19,7 @@ from api.database.crud import (
     criar_turno, listar_turnos,
     criar_feriado_nacional, criar_feriado_estadual,
     criar_evento, listar_usuarios,
+    obter_usuario, get_session  # Added get_session
 )
 
 # Configuração de logging
@@ -97,14 +99,14 @@ def seed_turnos():
     ]
     
     turnos_existentes = listar_turnos()
-    descricoes_existentes = {turno.descricao_ausencia for turno in turnos_existentes}
+    descricoes_existentes = {turno.descricao_ausencia for turno in turnos_existentes}  # Fixed: use correct attribute
     
     criados = 0
     for turno_desc in turnos:
         try:
             if turno_desc not in descricoes_existentes:
-                turno = criar_turno(descricao_ausencia=turno_desc)
-                logging.info(f"✅ Turno criado: {turno.descricao_ausencia}")
+                turno = criar_turno(descricao_turno=turno_desc)  # Fixed: use correct parameter name
+                logging.info(f"✅ Turno criado: {turno.descricao_ausencia}")  # Fixed: use correct attribute
                 criados += 1
             else:
                 logging.info(f"ℹ️ Turno já existe: {turno_desc}")
@@ -155,8 +157,8 @@ def seed_feriados_2025():
             try:
                 criar_feriado_nacional(
                     data_feriado=feriado["data"],
-                    uf=uf,
-                    descricao_feriado=feriado["descricao"]
+                    descricao_feriado=feriado["descricao"],
+                    uf=uf  # Fixed: pass uf parameter correctly
                 )
                 logging.info(f"✅ Feriado nacional criado: {feriado['descricao']} ({feriado['data']}) - {uf}")
                 criados_nacionais += 1
@@ -244,9 +246,10 @@ def seed_eventos_exemplo():
     criados = 0
     for evento_data in eventos_exemplo:
         try:
-            evento = criar_evento(**evento_data)
-            logging.info(f"✅ Evento criado: {evento_data['data_inicio']} a {evento_data['data_fim']}")
-            criados += 1
+            with get_session() as session:  # Fixed: Added session context
+                evento = criar_evento(session=session, **evento_data)  # Fixed: Added session parameter
+                logging.info(f"✅ Evento criado: {evento_data['data_inicio']} a {evento_data['data_fim']}")
+                criados += 1
         except Exception as e:
             logging.error(f"❌ Erro ao criar evento: {e}")
     

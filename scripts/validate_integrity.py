@@ -5,9 +5,6 @@ import sys
 from pathlib import Path
 import argparse
 from dotenv import load_dotenv
-from api.database.models import init_db
-from api.validation.integrity_checker import CPFCNPJIntegrityChecker
-from api.validation.report_generator import ReportGenerator
 
 # Adiciona o diretório pai ao path para importar os módulos
 project_root = Path(__file__).parent.parent
@@ -16,6 +13,9 @@ sys.path.insert(0, str(project_root))
 # Carrega variáveis de ambiente
 load_dotenv()
 
+from api.database.models import init_db  # Fixed: removed relative import
+from api.validation.integrity_checker import CPFCNPJIntegrityChecker
+from api.validation.report_generator import ReportGenerator
 
 def main():
     """Função principal do script de validação"""

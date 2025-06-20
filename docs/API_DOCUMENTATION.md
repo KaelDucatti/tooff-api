@@ -5,10 +5,10 @@
 API Flask para gestão hierárquica de eventos corporativos com sistema de aprovação baseado em níveis de usuário. **Versão 2.0** com nova estrutura de banco de dados utilizando CPF e CNPJ como chaves primárias.
 
 ### 📊 Status Atual da API
-- **Taxa de Funcionalidade**: 95.1% (58/61 testes passando)
-- **Status**: ✅ **Pronta para desenvolvimento** 
-- **Última Validação**: 05/06/2025
-- **Funcionalidades Core**: ✅ Operacionais
+- **Taxa de Funcionalidade**: 81.6% (71/87 testes passando)
+- **Status**: ⚠️ **Em desenvolvimento ativo** 
+- **Última Validação**: 2024-02-29
+- **Funcionalidades Core**: ⚠️ Em desenvolvimento
 - **Autenticação**: ✅ Totalmente funcional
 - **CRUD Básico**: ✅ Operacional
 - **Sistema de Aprovação**: ✅ Funcional
@@ -19,6 +19,7 @@ API Flask para gestão hierárquica de eventos corporativos com sistema de aprov
 3. Permissões de exclusão de usuários
 4. Validação de UF inválida
 5. Validação de CNPJ para grupos
+6. Sistema de Férias com validações pendentes
 
 ### 🎯 Modelo Hierárquico
 \`\`\`
@@ -71,15 +72,15 @@ O sistema implementa diversos middlewares para controle de acesso:
 | **Autenticação** | 4 | ✅ **100%** | Login, refresh, me, logout |
 | **Empresas** | 5 | ✅ **100%** | CRUD completo (CNPJ) |
 | **Grupos** | 5 | ⚠️ **90%** | CRUD + validações |
-| **Usuários** | 5 | ⚠️ **85%** | CRUD com algumas limitações |
-| **Eventos** | 7 | ✅ **95%** | CRUD + aprovação/rejeição |
+| **Usuários** | 5 | ⚠️ **90%** | CRUD com testes de permissão |
+| **Eventos** | 7 | ⚠️ **85%** | CRUD + aprovação/rejeição (validação de férias pendente) |
 | **UFs** | 3 | ⚠️ **80%** | Listagem funcional |
 | **Tipos Ausência** | 3 | ✅ **100%** | CRUD configurável |
 | **Turnos** | 3 | ✅ **100%** | CRUD de turnos |
 | **Feriados** | 4 | ✅ **100%** | Nacionais e estaduais |
 | **Calendário** | 2 | ✅ **100%** | Visualização completa |
 | **Validação** | 2 | ✅ **100%** | Verificação de integridade |
-| **TOTAL** | **43** | **95.1%** | **Altamente funcional** |
+| **TOTAL** | **43** | **81.6%** | **Altamente funcional** |
 
 ---
 
@@ -1086,6 +1087,31 @@ O sistema implementa diversos middlewares para controle de acesso:
 
 ---
 
+## 🏖️ 12. SISTEMA DE FÉRIAS (1 Endpoint)
+
+### `GET /api/ferias/disponivel/{cpf}`
+**Funcionalidade**: Verificar dias de férias disponíveis para um usuário
+- **Headers**: `Authorization: Bearer <token>`
+- **Exemplo**: `GET /api/ferias/disponivel/12345678901`
+- **Status**: 200 (sucesso), 404 (usuário não encontrado)
+- **Permissões**: RH, Gestor (seu grupo), Próprio usuário
+
+**Resposta de sucesso:**
+\`\`\`json
+{
+  "cpf": "12345678901",
+  "nome": "Maria Silva",
+  "dias_disponiveis": 20,
+  "ultimo_periodo_aquisitivo_fim": "2024-12-31"
+}
+\`\`\`
+
+**Problemas Conhecidos:**
+- Em alguns casos, retorna HTML em vez de JSON.
+- Validação de dados de entrada pendente.
+
+---
+
 ## 🔒 Sistema de Permissões V2.0
 
 ### Usuário RH
@@ -1128,7 +1154,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 
 ### 2. 📧 Validação de Email Duplicado
 **Status**: ✅ **Funcional**
-**Problema**: **Detecta emails duplicados via IntegrityError**
+**Problema**: **Detecta emails duplicados via IntegrityError (problema com status code 400 vs 409)**
 **Endpoint Afetado**: `POST /api/usuarios`
 **Impacto**: Muito baixo (funciona corretamente)
 **Prioridade**: **Concluído**
@@ -1152,6 +1178,20 @@ O sistema implementa diversos middlewares para controle de acesso:
 **Problema**: Validação de CNPJ não está sendo aplicada corretamente
 **Endpoint Afetado**: `POST /api/grupos`
 **Impacto**: Médio (integridade de dados)
+**Prioridade**: Alta
+
+### 6. 📅 Validação do Sistema de Férias
+**Status**: ⚠️ Em desenvolvimento
+**Problema**: Validações pendentes e endpoint retornando HTML em alguns casos
+**Endpoint Afetado**: `GET /api/ferias/disponivel/{cpf}`
+**Impacto**: Médio (funcionalidade principal)
+**Prioridade**: Alta
+
+### 7. 👤 Testes de Permissão de Usuário
+**Status**: ❌ Falhando
+**Problema**: Testes de permissão de criação de usuário falhando
+**Endpoint Afetado**: `POST /api/usuarios`
+**Impacto**: Alto (segurança)
 **Prioridade**: Alta
 
 ---
@@ -1209,15 +1249,16 @@ O sistema implementa diversos middlewares para controle de acesso:
 ## 📊 Métricas da API V2.0 (Atualizado)
 
 - **Total de Endpoints**: 43
-- **Endpoints Funcionais**: 58 (95.1%)
-- **Endpoints com Problemas**: 3 (4.9%)
-- **Módulos**: 11
-- **Funcionalidades Core**: ✅ Operacionais
+- **Endpoints Funcionais**: 71 (81.6%)
+- **Endpoints com Problemas**: 16 (18.4%)
+- **Módulos**: 12
+- **Funcionalidades Core**: ⚠️ Em desenvolvimento
 - **Chaves Primárias**: CPF/CNPJ ✅ Funcionando
 - **Estados Suportados**: 27 UFs
 - **Tipos de Dados**: Configuráveis
 - **Relacionamentos**: 8 tabelas principais
 - **Validações**: 20+ regras implementadas (5 com problemas)
+- **Sistema de Férias**: Em desenvolvimento
 
 ### 🎯 Funcionalidades Críticas
 - ✅ **Autenticação JWT**: 100% funcional
@@ -1229,7 +1270,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 ### 📈 Histórico de Melhorias
 - **v2.0 Inicial**: ~60% funcional
 - **v2.0 Anterior**: 88.5% funcional
-- **v2.0 Atual**: 95.1% funcional
+- **v2.0 Atual**: 81.6% funcional
 - **Próxima Meta**: 98% funcional
 
 ---
@@ -1237,17 +1278,29 @@ O sistema implementa diversos middlewares para controle de acesso:
 ## 🛣️ Roadmap de Correções
 
 ### 🔥 Prioridade Alta (Próxima Sprint)
-1. **Melhorar validação de CNPJ para grupos**
+1. **Corrigir validação do sistema de férias**
+   - Implementar validação completa da lógica de férias
+   - Corrigir endpoint para sempre retornar JSON
+
+2. **Corrigir testes de permissão de usuário**
+   - Analisar e corrigir regras de negócio para criação de usuários
+   - Garantir que testes de permissão passem
+
+### ⚡ Prioridade Média (Sprint Seguinte)
+3. **Padronizar status code de email duplicado**
+   - Alterar status code para 409 (Conflict)
+   - Garantir consistência com outras validações
+
+4. **Melhorar validação de CNPJ para grupos**
    - Implementar validação matemática de CNPJ
    - Verificar existência da empresa antes de criar grupo
 
-### ⚡ Prioridade Média (Sprint Seguinte)
-4. **Melhorar validação de UF**
+5. **Melhorar validação de UF**
    - Implementar verificação contra tabela de UFs válidas
    - Adicionar constraint de foreign key
 
 ### 📋 Prioridade Baixa (Backlog)
-5. **Corrigir permissões de exclusão**
+6. **Corrigir permissões de exclusão**
    - Revisar regras de negócio para exclusão
    - Implementar soft delete consistente
 
