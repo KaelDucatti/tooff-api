@@ -22,9 +22,9 @@ API Flask para gestão hierárquica de eventos corporativos com sistema de aprov
 6. Sistema de Férias com validações pendentes
 
 ### 🎯 Modelo Hierárquico
-\`\`\`
+```
 Empresa (CNPJ) → Grupo → Usuário (CPF) → Evento
-\`\`\`
+```
 
 ### 👥 Tipos de Usuário
 - **RH**: Acesso total ao sistema
@@ -111,15 +111,15 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Status**: 200 (sucesso), 401 (credenciais inválidas)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "email": "maria.rh@techsolutions.com",
   "senha": "123456"
 }
-\`\`\`
+```
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "autenticado": true,
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
@@ -140,7 +140,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "criado_em": "2023-06-01T10:00:00"
   }
 }
-\`\`\`
+```
 
 ### `POST /api/auth/refresh`
 **Funcionalidade**: Renovar token de acesso
@@ -149,20 +149,20 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Status**: 200 (sucesso), 401 (token inválido/expirado)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "refresh_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
 }
-\`\`\`
+```
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
   "token_type": "Bearer",
   "expires_in": 3600
 }
-\`\`\`
+```
 
 ### `GET /api/auth/me`
 **Funcionalidade**: Dados do usuário atual
@@ -171,7 +171,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Status**: 200 (sucesso), 401 (não autenticado)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "usuario": {
     "cpf": 12345678901,
@@ -187,7 +187,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "criado_em": "2023-06-01T10:00:00"
   }
 }
-\`\`\`
+```
 
 ### `POST /api/auth/logout`
 **Funcionalidade**: Logout (invalidar sessão)
@@ -195,11 +195,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Status**: 200 (sucesso)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "message": "Logout realizado com sucesso"
 }
-\`\`\`
+```
 
 ---
 
@@ -212,7 +212,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH (apenas própria empresa)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "cnpj": 12345678000190,
@@ -226,7 +226,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "total_grupos": 3
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/empresas/{cnpj}`
 **Funcionalidade**: Obter empresa por CNPJ
@@ -236,7 +236,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "cnpj": 12345678000190,
   "id": 1,
@@ -248,7 +248,7 @@ O sistema implementa diversos middlewares para controle de acesso:
   "criado_em": "2023-06-01",
   "total_grupos": 3
 }
-\`\`\`
+```
 
 ### `POST /api/empresas`
 **Funcionalidade**: Criar nova empresa
@@ -256,11 +256,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Nenhuma (funcionalidade desabilitada para RH)
 
 **Resposta de erro:**
-\`\`\`json
+```json
 {
   "erro": "RH não tem permissão para criar empresas"
 }
-\`\`\`
+```
 
 ### `PUT /api/empresas/{cnpj}`
 **Funcionalidade**: Atualizar empresa (RH apenas sua própria)
@@ -271,12 +271,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH (apenas própria empresa)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "nome": "Tech Solutions Atualizada",
   "telefone": "(11) 8765-4321"
 }
-\`\`\`
+```
 
 ### `DELETE /api/empresas/{cnpj}`
 **Funcionalidade**: Deletar empresa
@@ -284,11 +284,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Nenhuma (funcionalidade desabilitada para RH)
 
 **Resposta de erro:**
-\`\`\`json
+```json
 {
   "erro": "RH não tem permissão para deletar empresas"
 }
-\`\`\`
+```
 
 ---
 
@@ -302,7 +302,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor, Comum (apenas seu grupo)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "id": 1,
@@ -327,7 +327,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "total_usuarios": 3
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/grupos/{id}`
 **Funcionalidade**: Obter grupo específico
@@ -337,7 +337,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor, Comum (apenas seu grupo)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "id": 1,
   "nome": "Recursos Humanos",
@@ -349,7 +349,7 @@ O sistema implementa diversos middlewares para controle de acesso:
   "criado_em": "2023-06-01",
   "total_usuarios": 1
 }
-\`\`\`
+```
 
 ### `POST /api/grupos`
 **Funcionalidade**: Criar novo grupo
@@ -360,14 +360,14 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "nome": "Suporte",
   "cnpj_empresa": 12345678000190,
   "telefone": "(11) 1234-5682",
   "descricao": "Equipe de suporte técnico"
 }
-\`\`\`
+```
 
 ### `PUT /api/grupos/{id}`
 **Funcionalidade**: Atualizar grupo
@@ -377,12 +377,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "nome": "RH e Administrativo",
   "telefone": "(11) 1234-5699"
 }
-\`\`\`
+```
 
 ### `DELETE /api/grupos/{id}`
 **Funcionalidade**: Desativar grupo (soft delete)
@@ -392,11 +392,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "status": "Grupo desativado"
 }
-\`\`\`
+```
 
 ---
 
@@ -413,7 +413,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH (todos), Gestor (seu grupo), Comum (seu grupo)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "cpf": 12345678901,
@@ -442,7 +442,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "flag_gestor": "S"
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/usuarios/{cpf}`
 **Funcionalidade**: Obter usuário por CPF
@@ -452,7 +452,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Próprio usuário
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "cpf": 12345678901,
   "nome": "Maria Silva",
@@ -466,7 +466,7 @@ O sistema implementa diversos middlewares para controle de acesso:
   "UF": "SP",
   "flag_gestor": "N"
 }
-\`\`\`
+```
 
 ### `POST /api/usuarios`
 **Funcionalidade**: Criar novo usuário
@@ -477,7 +477,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "cpf": 78901234567,
   "nome": "Pedro Souza",
@@ -489,7 +489,7 @@ O sistema implementa diversos middlewares para controle de acesso:
   "tipo_usuario": "comum",
   "flag_gestor": "N"
 }
-\`\`\`
+```
 
 ### `PUT /api/usuarios/{cpf}`
 **Funcionalidade**: Atualizar usuário
@@ -499,12 +499,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Próprio usuário (limitado)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "nome": "Maria Silva Santos",
   "email": "maria.rh.nova@techsolutions.com"
 }
-\`\`\`
+```
 
 ### `DELETE /api/usuarios/{cpf}`
 **Funcionalidade**: Desativar usuário (soft delete)
@@ -514,11 +514,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "status": "Usuário desativado"
 }
-\`\`\`
+```
 
 ---
 
@@ -535,7 +535,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH (todos), Gestor (seu grupo), Comum (próprios)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "id": 1,
@@ -553,7 +553,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "UF": "SP"
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/eventos/{id}`
 **Funcionalidade**: Obter evento específico
@@ -563,7 +563,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Próprio usuário
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "id": 1,
   "cpf_usuario": 34567890123,
@@ -579,7 +579,7 @@ O sistema implementa diversos middlewares para controle de acesso:
   "criado_em": "2023-06-01T10:00:00",
   "UF": "SP"
 }
-\`\`\`
+```
 
 ### `POST /api/eventos`
 **Funcionalidade**: Criar novo evento
@@ -590,7 +590,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Comum (próprios)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "cpf_usuario": 34567890123,
   "data_inicio": "2024-03-10",
@@ -598,7 +598,7 @@ O sistema implementa diversos middlewares para controle de acesso:
   "id_tipo_ausencia": 1,
   "uf": "SP"
 }
-\`\`\`
+```
 
 ### `PUT /api/eventos/{id}`
 **Funcionalidade**: Atualizar evento
@@ -608,12 +608,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Próprio usuário (pendentes)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "data_inicio": "2024-03-12",
   "data_fim": "2024-03-17"
 }
-\`\`\`
+```
 
 ### `DELETE /api/eventos/{id}`
 **Funcionalidade**: Deletar evento
@@ -623,11 +623,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Próprio usuário (pendentes)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "status": "Evento deletado"
 }
-\`\`\`
+```
 
 ### `POST /api/eventos/{id}/aprovar`
 **Funcionalidade**: Aprovar evento
@@ -639,12 +639,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "aprovador_cpf": 23456789012,
   "observacoes": "Férias aprovadas conforme solicitado"
 }
-\`\`\`
+```
 
 ### `POST /api/eventos/{id}/rejeitar`
 **Funcionalidade**: Rejeitar evento
@@ -656,12 +656,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo)
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "aprovador_cpf": 23456789012,
   "observacoes": "Período não disponível devido a outro evento"
 }
-\`\`\`
+```
 
 ---
 
@@ -674,7 +674,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "cod_uf": 11,
@@ -689,7 +689,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "uf": "MG"
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/ufs/{uf}`
 **Funcionalidade**: Obter UF específica
@@ -699,12 +699,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "cod_uf": 11,
   "uf": "SP"
 }
-\`\`\`
+```
 
 ### `POST /api/ufs`
 **Funcionalidade**: Criar nova UF
@@ -714,12 +714,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "cod_uf": 99,
   "uf": "XX"
 }
-\`\`\`
+```
 
 ---
 
@@ -732,7 +732,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "id_tipo_ausencia": 1,
@@ -750,7 +750,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "usa_turno": true
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/tipos-ausencia/{id}`
 **Funcionalidade**: Obter tipo específico
@@ -760,13 +760,13 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "id_tipo_ausencia": 1,
   "descricao_ausencia": "Férias",
   "usa_turno": false
 }
-\`\`\`
+```
 
 ### `POST /api/tipos-ausencia`
 **Funcionalidade**: Criar novo tipo
@@ -777,12 +777,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "descricao_ausencia": "Licença Médica",
   "usa_turno": false
 }
-\`\`\`
+```
 
 ---
 
@@ -795,7 +795,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "id": 1,
@@ -810,7 +810,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "descricao_ausencia": "Madrugada"
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/turnos/{id}`
 **Funcionalidade**: Obter turno específico
@@ -820,12 +820,12 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "id": 1,
   "descricao_ausencia": "Dia"
 }
-\`\`\`
+```
 
 ### `POST /api/turnos`
 **Funcionalidade**: Criar novo turno
@@ -835,11 +835,11 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "descricao_ausencia": "Tarde"
 }
-\`\`\`
+```
 
 ---
 
@@ -853,7 +853,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "data_feriado": "2024-01-01",
@@ -866,7 +866,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "descricao_feriado": "Tiradentes"
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/feriados/estaduais`
 **Funcionalidade**: Listar feriados estaduais
@@ -876,7 +876,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: Qualquer usuário autenticado
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "data_feriado": "2024-01-25",
@@ -884,7 +884,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     "descricao_feriado": "Aniversário de São Paulo"
   }
 ]
-\`\`\`
+```
 
 ### `POST /api/feriados/nacionais`
 **Funcionalidade**: Criar feriado nacional
@@ -894,13 +894,13 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "data_feriado": "2024-09-07",
   "uf": "SP",
   "descricao_feriado": "Independência do Brasil"
 }
-\`\`\`
+```
 
 ### `POST /api/feriados/estaduais`
 **Funcionalidade**: Criar feriado estadual
@@ -910,13 +910,13 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Exemplo de requisição:**
-\`\`\`json
+```json
 {
   "data_feriado": "2024-07-09",
   "uf": "SP",
   "descricao_feriado": "Revolução Constitucionalista"
 }
-\`\`\`
+```
 
 ---
 
@@ -929,7 +929,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "summary": {
     "timestamp": "2023-06-01T10:00:00",
@@ -979,7 +979,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     }
   }
 }
-\`\`\`
+```
 
 ### `GET /api/validation/integrity-report`
 **Funcionalidade**: Obter relatório de integridade formatado
@@ -988,7 +988,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "report": "==========\n🔍 RELATÓRIO DE INTEGRIDADE CPF/CNPJ\n==========\n📅 Data/Hora: 01/06/2023 10:00:00\n\n📊 RESUMO:\n   ❌ Erros: 0\n   ⚠️  Avisos: 1\n   ℹ️  Informações: 8\n\n...",
   "summary": {
@@ -1005,7 +1005,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     }
   }
 }
-\`\`\`
+```
 
 ---
 
@@ -1020,7 +1020,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Formato**: Compatível com bibliotecas de calendário (FullCalendar)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 [
   {
     "id": 1,
@@ -1038,7 +1038,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     }
   }
 ]
-\`\`\`
+```
 
 ### `GET /api/calendario/grupo/{id}`
 **Funcionalidade**: Calendário específico de um grupo
@@ -1049,7 +1049,7 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH (todos os grupos), Gestor/Comum (apenas seu grupo)
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "grupo": {
     "id": 1,
@@ -1074,7 +1074,7 @@ O sistema implementa diversos middlewares para controle de acesso:
     }
   ]
 }
-\`\`\`
+```
 
 **Cores por tipo de ausência:**
 - Férias: `#4CAF50` (Verde)
@@ -1097,14 +1097,14 @@ O sistema implementa diversos middlewares para controle de acesso:
 - **Permissões**: RH, Gestor (seu grupo), Próprio usuário
 
 **Resposta de sucesso:**
-\`\`\`json
+```json
 {
   "cpf": "12345678901",
   "nome": "Maria Silva",
   "dias_disponiveis": 20,
   "ultimo_periodo_aquisitivo_fim": "2024-12-31"
 }
-\`\`\`
+```
 
 **Problemas Conhecidos:**
 - Em alguns casos, retorna HTML em vez de JSON.
