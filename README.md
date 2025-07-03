@@ -14,7 +14,7 @@ API Flask para gestão de eventos, usuários e grupos em empresas, com sistema d
 
 ## 📋 Estrutura do Projeto
 
-\`\`\`
+```
 ├── app.py                 # Aplicação principal Flask
 ├── requirements.txt       # Dependências Python
 ├── .env.example          # Exemplo de variáveis de ambiente
@@ -55,7 +55,7 @@ API Flask para gestão de eventos, usuários e grupos em empresas, com sistema d
     ├── API_DOCUMENTATION.md    # Documentação da API
     ├── SCHEMA_DOCUMENTATION.md # Documentação do schema
     └── VALIDATION_DOCUMENTATION.md # Documentação de validação
-\`\`\`
+```
 
 ## 🏗️ Modelo de Dados
 
