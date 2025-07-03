@@ -87,4 +87,4 @@ if __name__ == '__main__':
     print("🔍 Sistema de validação CPF/CNPJ ativo!")
     print("🌐 Servidor iniciando na porta 5000...")
     
-    app.run(debug=True, port=5000)
+    app.run(debug=False, port=5000, host='0.0.0.0')
